@@ -58,6 +58,11 @@ label.chk{display:flex;align-items:center;gap:5px;color:var(--muted);cursor:poin
 .tbtn{background:none;border:1px solid var(--line);color:var(--muted);border-radius:5px;padding:3px 10px;cursor:pointer}
 .tbtn:hover,.tbtn.on{color:var(--text);border-color:#3b4c66}
 [hidden]{display:none !important}
+.fsb{background:none;border:1px solid var(--line);color:var(--muted);border-radius:5px;padding:3px 6px;cursor:pointer;display:grid;place-items:center}
+.fsb:hover{color:var(--text);border-color:#3b4c66}
+.fsb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#grid.solo{grid-template-columns:minmax(0,1fr) !important;grid-template-rows:minmax(0,1fr) !important}
+#grid.solo .panel:not(.solo-panel){display:none}
 #fibPanel{position:fixed;width:350px;background:var(--panel);border:1px solid #3b4c66;border-radius:8px;padding:12px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px}
 #fibPanel .fp-title{font-weight:600}
 #fibInput{background:#0f1319;border:1px solid var(--line);color:var(--text);border-radius:5px;padding:6px 8px;font:13px var(--mono);width:100%}
@@ -185,6 +190,8 @@ const HINTS={
   eraser:'Haz clic sobre un dibujo para borrarlo.'
 };
 const KEY='cryptoGrid.v1';
+const ICON_EXPAND='<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+const ICON_COLLAPSE='<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
 
 /* ---------- Estado persistente ---------- */
 const DEFAULT_PANELS=[
@@ -218,6 +225,7 @@ const gridEl=$('#grid');
 const panels=[];
 const live=()=>panels.filter(Boolean);
 let tool='cursor';
+let soloPanel=null;
 let activePanel=null;
 
 function invalidateAll(){live().forEach(p=>p.dirty=true);save();}
@@ -335,6 +343,7 @@ class Panel{
         '<button class="mkt" title="Cambiar entre Spot y Futuros perpetuos">Spot</button>'+
         '<button class="inv" title="Invertir eje de precios (los números bajos arriba)">Invertir</button>'+
         '<button class="clr" title="Borrar todos los dibujos de este par">Limpiar</button>'+
+        '<button class="fsb" title="Pantalla completa"></button>'+
       '</div>'+
       '<div class="pbody"><div class="chart"></div><canvas class="ov"></canvas><div class="msg"></div></div>';
     this.root=root;
@@ -401,6 +410,9 @@ class Panel{
       const b=e.target.closest('button[data-iv]');
       if(b) this.setInterval_(b.dataset.iv);
     });
+    this.fsEl=$('.fsb',root);
+    this.fsEl.innerHTML=ICON_EXPAND;
+    this.fsEl.addEventListener('click',()=>toggleSolo(this));
     this.mktEl=$('.mkt',root);
     this.mktEl.addEventListener('click',()=>{
       this.cfg.market=this.cfg.market==='futures'?'spot':'futures';
@@ -970,8 +982,44 @@ $('#tools').addEventListener('click',e=>{
   if(b) setTool(b.dataset.tool);
 });
 
+function syncSolo(){
+  gridEl.classList.toggle('solo',!!soloPanel);
+  live().forEach(p=>{
+    const on=p===soloPanel;
+    p.root.classList.toggle('solo-panel',on);
+    p.fsEl.innerHTML=on?ICON_COLLAPSE:ICON_EXPAND;
+    p.fsEl.title=on?'Salir de pantalla completa':'Pantalla completa';
+    p.dirty=true;
+  });
+}
+function enterSolo(p){
+  soloPanel=p;
+  syncSolo();
+  setActive(p);
+  try{
+    if(document.fullscreenEnabled&&!document.fullscreenElement){
+      const r=document.documentElement.requestFullscreen();
+      if(r&&r.catch) r.catch(()=>{});
+    }
+  }catch(e){}
+}
+function exitSolo(){
+  soloPanel=null;
+  syncSolo();
+  try{
+    if(document.fullscreenElement){
+      const r=document.exitFullscreen();
+      if(r&&r.catch) r.catch(()=>{});
+    }
+  }catch(e){}
+}
+function toggleSolo(p){ if(soloPanel===p) exitSolo(); else enterSolo(p); }
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement&&soloPanel) exitSolo();
+});
+
 function buildGrid(){
-  gridEl.className='g'+state.layout;
+  gridEl.className='g'+state.layout+(soloPanel?' solo':'');
   for(let i=0;i<6;i++){
     if(i<state.layout){
       if(!panels[i]) panels[i]=new Panel(i);
@@ -979,12 +1027,14 @@ function buildGrid(){
       panels[i].destroy();panels[i]=null;
     }
   }
+  if(soloPanel&&!live().includes(soloPanel)) exitSolo();
   if(activePanel&&!live().includes(activePanel)) setActive(null);
   document.querySelectorAll('#layoutSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.n===state.layout));
 }
 $('#layoutSeg').addEventListener('click',e=>{
   const b=e.target.closest('button[data-n]');
   if(!b) return;
+  if(soloPanel) exitSolo();
   state.layout=+b.dataset.n;save();buildGrid();
 });
 
@@ -1084,7 +1134,10 @@ window.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey) return;
   const map={v:'cursor',h:'h',f:'fib',b:'brush',e:'eraser'};
   if(map[k]) setTool(map[k]);
-  else if(k==='escape') setTool('cursor');
+  else if(k==='escape'){
+    if(tool!=='cursor') setTool('cursor');
+    else if(soloPanel) exitSolo();
+  }
 });
 
 /* ---------- Arranque ---------- */
