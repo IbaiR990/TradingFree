@@ -150,7 +150,23 @@ if(typeof LightweightCharts==='undefined'){
 }
 
 /* ---------- Configuración ---------- */
-const INTERVALS={'1m':60,'5m':300,'15m':900,'1h':3600,'4h':14400,'1d':86400,'1w':604800};
+const INTERVALS={'1m':60,'5m':300,'15m':900,'1h':3600,'4h':14400,'1d':86400,'1w':604800,'1M':2592000,'3M':7776000,'12M':31536000};
+// Binance no ofrece 3 ni 12 meses: se construyen agrupando velas mensuales (trimestres y años naturales, UTC)
+const AGG={'3M':3,'12M':12};
+function groupStart(t,iv){
+  const d=new Date(t*1000),y=d.getUTCFullYear(),m=d.getUTCMonth();
+  const mm=AGG[iv]===12?0:Math.floor(m/3)*3;
+  return Date.UTC(y,mm,1)/1000;
+}
+function aggregate(bars,iv){
+  const out=[];let cur=null;
+  for(const b of bars){
+    const gs=groupStart(b.time,iv);
+    if(cur&&cur.time===gs){cur.high=Math.max(cur.high,b.high);cur.low=Math.min(cur.low,b.low);cur.close=b.close;}
+    else{cur={time:gs,open:b.open,high:b.high,low:b.low,close:b.close};out.push(cur);}
+  }
+  return out;
+}
 const REST=['https://api.binance.com','https://data-api.binance.vision'];
 const REST_F='https://fapi.binance.com';
 const WSS={
@@ -250,14 +266,15 @@ async function fetchKlines(symbol,interval,opts){
   let lastErr;
   for(const base of bases){
     try{
-      let url=`${base}${path}?symbol=${symbol}&interval=${interval}&limit=${opts.limit||1000}`;
+      let url=`${base}${path}?symbol=${symbol}&interval=${AGG[interval]?'1M':interval}&limit=${opts.limit||1000}`;
       if(opts.endTime) url+=`&endTime=${opts.endTime}`;
       const r=await fetch(url);
       if(r.status===400) throw Object.assign(new Error('Par no encontrado en '+(fut?'Futuros':'Spot')),{fatal:true,notFound:true});
       if(fut&&(r.status===451||r.status===403)) throw Object.assign(new Error('Binance bloquea los futuros desde tu conexión o ubicación'),{fatal:true});
       if(!r.ok) throw new Error('Error HTTP '+r.status);
       const j=await r.json();
-      return j.map(k=>({time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]}));
+      const rows=j.map(k=>({time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]}));
+      return AGG[interval]?aggregate(rows,interval):rows;
     }catch(e){
       if(e.fatal) throw e;
       lastErr=e;
@@ -330,7 +347,12 @@ class Panel{
     this.ctx=this.canvas.getContext('2d');
     this.msgEl=$('.msg',root);
 
-    const fmtDate=t=>new Date(t*1000).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    const fmtDate=t=>{
+      const iv=this.cfg.interval,d=new Date(t*1000);
+      if(iv==='1M'||iv==='3M'||iv==='12M') return d.toLocaleDateString('es-ES',{month:'short',year:'numeric',timeZone:'UTC'});
+      if(iv==='1d'||iv==='1w') return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});
+      return d.toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    };
     this.chart=LightweightCharts.createChart(this.chartEl,{
       autoSize:true,
       layout:{background:{type:'solid',color:'#0c0f14'},textColor:'#8b95a5',fontSize:11},
@@ -525,7 +547,7 @@ class Panel{
 
   /* --- tiempo real --- */
   openWS(id){
-    const stream=`${this.cfg.symbol.toLowerCase()}@kline_${this.cfg.interval}`;
+    const stream=`${this.cfg.symbol.toLowerCase()}@kline_${AGG[this.cfg.interval]?'1M':this.cfg.interval}`;
     const connect=bi=>{
       if(id!==this.reqId) return;
       let ws;
@@ -538,7 +560,9 @@ class Panel{
           const m=JSON.parse(ev.data);
           if(!m.k) return;
           const k=m.k;
-          this.applyBar({time:Math.floor(k.t/1000),open:+k.o,high:+k.h,low:+k.l,close:+k.c});
+          let bar={time:Math.floor(k.t/1000),open:+k.o,high:+k.h,low:+k.l,close:+k.c};
+          if(AGG[this.cfg.interval]) bar=this.mergeAgg(bar);
+          this.applyBar(bar);
         }catch(e){}
       };
       ws.onerror=()=>{try{ws.close();}catch(e){}};
@@ -559,6 +583,12 @@ class Panel{
       w.onclose=null;w.onmessage=null;w.onerror=null;
       try{w.close();}catch(e){}
     }
+  }
+  mergeAgg(m){
+    const gs=groupStart(m.time,this.cfg.interval);
+    const last=this.data[this.data.length-1];
+    if(last&&last.time===gs) return{time:gs,open:last.open,high:Math.max(last.high,m.high),low:Math.min(last.low,m.low),close:m.close};
+    return{time:gs,open:m.open,high:m.high,low:m.low,close:m.close};
   }
   applyBar(bar){
     const d=this.data,last=d[d.length-1];
