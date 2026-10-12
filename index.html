@@ -11,7 +11,7 @@
   --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--text);font:13px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button{font:inherit;color:inherit}
 #app{display:flex;flex-direction:column;height:100%}
 
@@ -75,7 +75,18 @@ label.chk{display:flex;align-items:center;gap:5px;color:var(--muted);cursor:poin
 .inv:hover{color:var(--text);border-color:#3b4c66}
 .inv.on{background:var(--sel);color:#fff;border-color:#3b4c66}
 
-.pbody{position:relative;flex:1;min-height:0}
+.pbody{position:relative;flex:1;min-height:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.pbody.tool-on,.pbody.tool-on *{touch-action:none !important}
+button{touch-action:manipulation}
+.phead{flex-wrap:wrap}
+@media (pointer:coarse){
+  .sym,#fibInput,#width{font-size:16px}
+  #tools{width:54px}
+  #tools button{width:44px;height:44px}
+  .ivs button{padding:7px 8px}
+  .mkt,.inv,.clr,.tbtn{padding:6px 10px}
+  .seg button{padding:7px 13px}
+}
 .chart,.ov{position:absolute;inset:0}
 .ov{width:100%;height:100%;pointer-events:none;z-index:10}
 .msg{position:absolute;left:12px;top:10px;color:var(--muted);pointer-events:none;z-index:11}
@@ -175,7 +186,7 @@ function loadState(){
       return st;
     }
   }catch(e){}
-  return {layout:4,panels:DEFAULT_PANELS.map(p=>Object.assign({},p)),drawings:{},color:'#f5c518',width:2,fibExt:false,magnet:true,fibLevels:FIB.slice()};
+  return {layout:window.innerWidth<700?1:4,panels:DEFAULT_PANELS.map(p=>Object.assign({},p)),drawings:{},color:'#f5c518',width:2,fibExt:false,magnet:true,fibLevels:FIB.slice()};
 }
 const state=loadState();
 let saveTimer=null;
@@ -395,7 +406,13 @@ class Panel{
     const b=this.body;
     b.addEventListener('pointerdown',e=>this.onDown(e),true);
     b.addEventListener('mousedown',e=>{if(this.consumed) e.stopPropagation();},true);
-    b.addEventListener('touchstart',e=>{if(this.consumed) e.stopPropagation();},{capture:true,passive:true});
+    b.addEventListener('touchstart',e=>{
+      if(this.consumed){e.stopPropagation();if(e.cancelable) e.preventDefault();}
+    },{capture:true,passive:false});
+    b.addEventListener('touchmove',e=>{
+      if(this.consumed||this.drag){e.stopPropagation();if(e.cancelable) e.preventDefault();}
+    },{capture:true,passive:false});
+    b.classList.toggle('tool-on',tool!=='cursor');
     b.addEventListener('pointermove',e=>this.onMove(e));
     b.addEventListener('pointerup',e=>this.onUp(e));
     b.addEventListener('pointercancel',e=>this.onUp(e));
@@ -642,25 +659,26 @@ class Panel{
   }
   hit(x,y){
     const list=drawingsOf(this.key);
+    const k=this.touch?2.5:1;
     for(let i=list.length-1;i>=0;i--){
       const d=list[i];
       if(d.type==='h'){
         const yy=this.yOf(d.price);
         const x0=d.t!=null?this.xOf(d.t):-Infinity;
-        if(yy!=null&&x0!=null&&x>=x0-6&&Math.abs(yy-y)<=6) return{d,part:'body'};
+        if(yy!=null&&x0!=null&&x>=x0-6*k&&Math.abs(yy-y)<=6*k) return{d,part:'body'};
       }else if(d.type==='brush'){
-        const pts=this.screenPts(d.pts),tol=Math.max(6,d.w/2+3);
+        const pts=this.screenPts(d.pts),tol=Math.max(6,d.w/2+3)*k;
         for(let j=1;j<pts.length;j++){
           if(segDist(x,y,pts[j-1].x,pts[j-1].y,pts[j].x,pts[j].y)<=tol) return{d,part:'body'};
         }
       }else if(d.type==='fib'){
         const g=this.fibGeom(d);if(!g) continue;
-        if(Math.hypot(x-g.x1,y-g.y1)<=9) return{d,part:'p1'};
-        if(Math.hypot(x-g.x2,y-g.y2)<=9) return{d,part:'p2'};
-        if(segDist(x,y,g.x1,g.y1,g.x2,g.y2)<=6) return{d,part:'body'};
-        const xr=state.fibExt?Infinity:g.xr+6;
-        if(x>=g.xl-6&&x<=xr){
-          for(const l of g.levels) if(Math.abs(l.y-y)<=6) return{d,part:'body'};
+        if(Math.hypot(x-g.x1,y-g.y1)<=9*k) return{d,part:'p1'};
+        if(Math.hypot(x-g.x2,y-g.y2)<=9*k) return{d,part:'p2'};
+        if(segDist(x,y,g.x1,g.y1,g.x2,g.y2)<=6*k) return{d,part:'body'};
+        const xr=state.fibExt?Infinity:g.xr+6*k;
+        if(x>=g.xl-6*k&&x<=xr){
+          for(const l of g.levels) if(Math.abs(l.y-y)<=6*k) return{d,part:'body'};
         }
       }
     }
@@ -670,6 +688,7 @@ class Panel{
   /* --- eventos --- */
   onDown(e){
     this.consumed=false;
+    this.touch=e.pointerType==='touch';
     if(e.button!==0) return;
     const{x,y}=this.pos(e),ps=this.paneSize();
     setActive(this);
@@ -913,6 +932,7 @@ function setTool(t){
   live().forEach(p=>{
     p.pending=null;p.preview=null;p.drag=null;p.hoverId=null;p.snapMark=null;p.dirty=true;
     p.setCursor(null);
+    p.body.classList.toggle('tool-on',t!=='cursor');
   });
 }
 $('#tools').addEventListener('click',e=>{
