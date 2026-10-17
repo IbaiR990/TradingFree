@@ -41,6 +41,12 @@ label.chk{display:flex;align-items:center;gap:5px;color:var(--muted);cursor:poin
 .g2{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
 .g4{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
 .g6{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+.g8{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+.g10{grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+.g12{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
+.g14{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr))}
+.g14 .panel:nth-child(13),.g14 .panel:nth-child(14){grid-column:span 2}
+.g16{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr))}
 
 .panel{display:flex;flex-direction:column;background:var(--bg);min-width:0;min-height:0;box-shadow:inset 0 0 0 1px transparent}
 .panel.active{box-shadow:inset 0 0 0 1px var(--sel)}
@@ -115,6 +121,13 @@ button{touch-action:manipulation}
   .ivs{display:none}
   .ivsel{display:block}
 }
+@container (max-width:340px){
+  .phead{gap:4px;padding:2px 4px}
+  .sym{width:68px;padding:2px 4px;font-size:11px}
+  .ivsel{padding:2px 2px;font-size:11px}
+  .last{font-size:11px}
+  .mkt,.clr,.inv,.fsb{padding:2px 4px;font-size:11px}
+}
 @media (pointer:coarse){
   .phead{flex-wrap:wrap}
   .clr,.inv,.fsb{padding:7px 9px}
@@ -130,6 +143,45 @@ button{touch-action:manipulation}
 html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-user-select:none !important;user-select:none !important}
 #dropInd{position:fixed;z-index:100;width:4px;margin-left:-2px;background:#5b8def;border-radius:2px;pointer-events:none;display:none;box-shadow:0 0 8px rgba(91,141,239,.8)}
 @media (pointer:coarse){.grip{width:22px;height:30px}}
+
+/* Calculadora flotante */
+.tbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+#calcPanel{position:fixed;z-index:60;width:300px;background:var(--panel);border:1px solid #3b4c66;border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.6);font-size:13px}
+.cp-head{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 8px 12px;border-bottom:1px solid var(--line);cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;font-weight:600}
+.cp-head button{background:none;border:0;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
+.cp-head button:hover{color:var(--text)}
+.cp-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.cp-pair{display:flex;align-items:baseline;gap:8px}
+.cp-pair b{font:700 14px var(--mono)}
+.cp-pair .m{color:var(--muted);font-size:12px}
+.cp-live{margin-left:auto;font:700 16px var(--mono)}
+.cp-live.up{color:var(--up)} .cp-live.down{color:var(--down)}
+.cp-lh{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;margin-bottom:3px}
+.cp-body input{width:100%;background:#0f1319;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:7px 9px;font:600 15px var(--mono)}
+.cp-body input:focus{outline:none;border-color:#4a6283}
+.cp-follow{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:1px 9px;font:600 11px system-ui,sans-serif;cursor:pointer}
+.cp-follow.on{background:var(--sel);color:var(--up);border-color:transparent}
+.cp-msg{color:var(--muted);font-size:12px;min-height:1.3em}
+.cp-msg.err{color:var(--down)}
+.cp-res{border-top:1px solid var(--line);padding-top:8px}
+.cp-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
+.cp-badge{font-weight:700;font-size:11px;padding:2px 9px;border-radius:999px;color:#fff;background:#3b4658}
+.cp-badge.long{background:#0e9f6e} .cp-badge.short{background:#e0364a}
+.cp-pos{display:block;background:none;border:0;padding:0;margin-top:2px;color:var(--text);font:700 24px var(--mono);cursor:pointer;text-align:left}
+.cp-sub{display:flex;gap:14px;margin-top:6px;color:var(--muted);font-size:12px}
+.cp-sub b{display:block;color:var(--text);font:600 13px var(--mono)}
+.cp-tt{margin:10px 0 2px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.cp-t{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line)}
+.cp-t .k{font-weight:700;width:22px}
+.cp-t .g{flex:1;color:var(--muted);font-size:12px}
+.cp-t .p{background:none;border:0;padding:0;color:var(--text);font:700 14px var(--mono);cursor:pointer}
+#cpToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:7px 14px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:120}
+#cpToast.on{opacity:1}
+@media (max-width:700px){
+  #calcPanel{left:0 !important;right:0;top:auto !important;bottom:0;width:auto;border-radius:12px 12px 0 0;max-height:82vh;overflow:auto}
+  .cp-head{cursor:default}
+}
+@media (pointer:coarse){.cp-body input{font-size:16px}}
 </style>
 </head>
 <body>
@@ -137,7 +189,7 @@ html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-use
   <header id="topbar">
     <div class="brand">Crypto Grid</div>
     <div class="seg" id="layoutSeg">
-      <button data-n="1">1</button><button data-n="2">2</button><button data-n="4">4</button><button data-n="6">6</button>
+      <button data-n="1">1</button><button data-n="2">2</button><button data-n="4">4</button><button data-n="6">6</button><button data-n="8">8</button><button data-n="10">10</button><button data-n="12">12</button><button data-n="14">14</button><button data-n="16">16</button>
     </div>
     <div id="hint"></div>
     <div class="opts">
@@ -146,6 +198,7 @@ html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-use
         <option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option><option value="4">4 px</option><option value="6">6 px</option>
       </select>
       <label class="chk" title="Pega la línea al máximo, mínimo, apertura o cierre más cercano. Mantén Ctrl para invertirlo un momento."><input type="checkbox" id="magnet"> Imán</label>
+      <button class="tbtn" id="calcBtn" title="Calculadora de riesgo"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M8 18h2M12 18h2"/></svg></button>
       <button class="tbtn" id="fibBtn" title="Editar los niveles de Fibonacci">Niveles Fib</button>
     </div>
   </header>
@@ -163,6 +216,35 @@ html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-use
 </div>
 <datalist id="symlist"></datalist>
 <datalist id="symlistF"></datalist>
+<div id="calcPanel" hidden>
+  <div class="cp-head" id="cpHead"><span>Calculadora de riesgo</span><button type="button" id="cpClose" title="Cerrar">×</button></div>
+  <div class="cp-body">
+    <div class="cp-pair"><b id="cpPair">—</b><span class="m" id="cpMkt"></span><span class="cp-live" id="cpLive">—</span></div>
+    <div>
+      <div class="cp-lh"><span>Precio de entrada</span><button type="button" id="cpFollow" class="cp-follow on" title="Pulsa para fijar o seguir el precio en vivo">● En vivo</button></div>
+      <input id="cpEntry" inputmode="decimal" autocomplete="off" placeholder="Precio">
+    </div>
+    <div>
+      <div class="cp-lh"><span>Precio del stop</span></div>
+      <input id="cpStop" inputmode="decimal" autocomplete="off" placeholder="Escribe el stop">
+    </div>
+    <div>
+      <div class="cp-lh"><span>Dinero que arriesgas ($)</span></div>
+      <input id="cpRisk" inputmode="decimal" autocomplete="off" placeholder="Importe en $">
+    </div>
+    <div class="cp-msg" id="cpMsg"></div>
+    <div class="cp-res">
+      <div class="cp-top"><span>Tamaño de la posición</span><span class="cp-badge" id="cpDir">—</span></div>
+      <button class="cp-pos" id="cpPos" type="button">—</button>
+      <div class="cp-sub"><div>Unidades<b id="cpUnits">—</b></div><div>Distancia al stop<b id="cpDist">—</b></div></div>
+      <div class="cp-tt">Precios objetivo</div>
+      <div class="cp-t"><span class="k">1×</span><span class="g" id="cpG1">Ganas lo mismo</span><button class="p" id="cpP1" type="button">—</button></div>
+      <div class="cp-t"><span class="k">2×</span><span class="g" id="cpG2">El doble</span><button class="p" id="cpP2" type="button">—</button></div>
+      <div class="cp-t"><span class="k">3×</span><span class="g" id="cpG3">El triple</span><button class="p" id="cpP3" type="button">—</button></div>
+    </div>
+  </div>
+</div>
+<div id="cpToast"></div>
 <div id="fibPanel" hidden>
   <div class="fp-title">Niveles de Fibonacci</div>
   <input type="text" id="fibInput" spellcheck="false" autocomplete="off">
@@ -191,7 +273,7 @@ if(typeof LightweightCharts==='undefined'){
 }
 
 /* ---------- Configuración ---------- */
-const INTERVALS={'1m':60,'5m':300,'15m':900,'1h':3600,'4h':14400,'1d':86400,'1w':604800,'1M':2592000,'3M':7776000,'12M':31536000};
+const INTERVALS={'1m':60,'5m':300,'15m':900,'30m':1800, '1h':3600, '2h':7200, '4h':14400,'1d':86400,'1w':604800,'1M':2592000,'3M':7776000,'12M':31536000};
 // Binance no ofrece 3 ni 12 meses: se construyen agrupando velas mensuales (trimestres y años naturales, UTC)
 const AGG={'3M':3,'12M':12};
 function groupStart(t,iv){
@@ -231,16 +313,21 @@ const ICON_EXPAND='<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5
 const ICON_COLLAPSE='<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
 
 /* ---------- Estado persistente ---------- */
+const MAX_PANELS=16;
 const DEFAULT_PANELS=[
   {symbol:'BTCUSDT',interval:'15m'},{symbol:'ETHUSDT',interval:'15m'},{symbol:'SOLUSDT',interval:'15m'},
-  {symbol:'BNBUSDT',interval:'15m'},{symbol:'XRPUSDT',interval:'1h'},{symbol:'DOGEUSDT',interval:'1h'}
+  {symbol:'BNBUSDT',interval:'15m'},{symbol:'XRPUSDT',interval:'1h'},{symbol:'DOGEUSDT',interval:'1h'},
+  {symbol:'ADAUSDT',interval:'1h'},{symbol:'AVAXUSDT',interval:'1h'},{symbol:'LINKUSDT',interval:'1h'},
+  {symbol:'DOTUSDT',interval:'1h'},{symbol:'LTCUSDT',interval:'1h'},{symbol:'NEARUSDT',interval:'1h'},
+  {symbol:'UNIUSDT',interval:'1h'},{symbol:'ATOMUSDT',interval:'1h'},{symbol:'APTUSDT',interval:'1h'},
+  {symbol:'ARBUSDT',interval:'1h'}
 ];
 function loadState(){
   try{
     const s=JSON.parse(localStorage.getItem(KEY));
     if(s&&Array.isArray(s.panels)){
       const st=Object.assign({layout:4,drawings:{},color:'#f5c518',width:2,fibExt:false,fibExtL:false,magnet:true,fibLevels:FIB.slice()},s);
-      while(st.panels.length<6) st.panels.push(Object.assign({},DEFAULT_PANELS[st.panels.length]));
+      while(st.panels.length<MAX_PANELS) st.panels.push(Object.assign({},DEFAULT_PANELS[st.panels.length]||DEFAULT_PANELS[0]));
       if(!st.drawings||typeof st.drawings!=='object') st.drawings={};
       if(!Array.isArray(st.fibLevels)||st.fibLevels.length<2||st.fibLevels.some(v=>typeof v!=='number'||!isFinite(v))) st.fibLevels=FIB.slice();
       return st;
@@ -249,6 +336,7 @@ function loadState(){
   return {layout:window.innerWidth<700?1:4,panels:DEFAULT_PANELS.map(p=>Object.assign({},p)),drawings:{},color:'#f5c518',width:2,fibExt:false,fibExtL:false,magnet:true,fibLevels:FIB.slice()};
 }
 const state=loadState();
+if(!state.calc||typeof state.calc!=='object') state.calc={open:false,x:null,y:null,risk:''};
 let saveTimer=null;
 function save(){
   clearTimeout(saveTimer);
@@ -300,6 +388,7 @@ function normalizeSymbol(raw){
 function setActive(p){
   activePanel=p;
   live().forEach(x=>x.root.classList.toggle('active',x===p));
+  if(typeof calcSchedule==='function') calcSchedule();
 }
 
 /* ---------- Datos de Binance ---------- */
@@ -538,6 +627,7 @@ class Panel{
     this.data=[];this.noMore=false;this.loadingMore=false;
     this.series.setData([]);
     this.lastEl.textContent='';
+    if(typeof calcSchedule==='function') calcSchedule();
     this.hoverId=null;this.pending=null;this.preview=null;this.drag=null;
     this.setMsg('Cargando '+this.cfg.symbol+(this.cfg.market==='futures'?' (futuros)':'')+'…');
     this.dirty=true;
@@ -659,6 +749,7 @@ class Panel{
     if(!l) return;
     this.lastEl.textContent=l.close.toFixed(this.dec);
     this.lastEl.className='last '+(l.close>=l.open?'up':'down');
+    if(typeof calcTick==='function') calcTick(this);
   }
 
   /* --- conversión tiempo/precio <-> pantalla --- */
@@ -1051,27 +1142,12 @@ function enterSolo(p){
   soloPanel=p;
   syncSolo();
   setActive(p);
-  try{
-    if(document.fullscreenEnabled&&!document.fullscreenElement){
-      const r=document.documentElement.requestFullscreen();
-      if(r&&r.catch) r.catch(()=>{});
-    }
-  }catch(e){}
 }
 function exitSolo(){
   soloPanel=null;
   syncSolo();
-  try{
-    if(document.fullscreenElement){
-      const r=document.exitFullscreen();
-      if(r&&r.catch) r.catch(()=>{});
-    }
-  }catch(e){}
 }
 function toggleSolo(p){ if(soloPanel===p) exitSolo(); else enterSolo(p); }
-document.addEventListener('fullscreenchange',()=>{
-  if(!document.fullscreenElement&&soloPanel) exitSolo();
-});
 
 /* ---------- Reordenar gráficas arrastrando ---------- */
 const dropInd=document.createElement('div');
@@ -1143,7 +1219,7 @@ function movePanel(src,target,side){
 
 function buildGrid(){
   gridEl.className='g'+state.layout+(soloPanel?' solo':'');
-  for(let i=0;i<6;i++){
+  for(let i=0;i<MAX_PANELS;i++){
     if(i<state.layout){
       if(!panels[i]) panels[i]=new Panel(i);
     }else if(panels[i]){
@@ -1153,6 +1229,7 @@ function buildGrid(){
   if(soloPanel&&!live().includes(soloPanel)) exitSolo();
   if(activePanel&&!live().includes(activePanel)) setActive(null);
   document.querySelectorAll('#layoutSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.n===state.layout));
+  if(typeof calcSchedule==='function') calcSchedule();
 }
 $('#layoutSeg').addEventListener('click',e=>{
   const b=e.target.closest('button[data-n]');
@@ -1180,6 +1257,168 @@ $('#width').addEventListener('change',e=>{state.width=+e.target.value;save();});
 $('#magnet').addEventListener('change',e=>{state.magnet=e.target.checked;save();});
 $('#fibExtR').addEventListener('change',e=>{state.fibExt=e.target.checked;invalidateAll();});
 $('#fibExtL').addEventListener('change',e=>{state.fibExtL=e.target.checked;invalidateAll();});
+
+/* ---------- Calculadora de riesgo flotante ---------- */
+const calcPanel=$('#calcPanel'),calcBtn=$('#calcBtn');
+const cE=id=>document.getElementById(id);
+const cNum=v=>{let t=String(v).trim().replace(/\s/g,'');if(!t) return NaN;t=t.includes('.')?t.replace(/,/g,''):t.replace(',','.');return /^-?\d*\.?\d+$/.test(t)?parseFloat(t):NaN;};
+const cNf=(n,max)=>n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:max});
+const cDec=p=>p>=1000?2:p>=1?4:p>=0.01?6:8;
+const cRaw=(n,d)=>String(+n.toFixed(d));
+const calcSt={key:null,follow:true,lastPrice:null,raf:0};
+
+function currentCalcPanel(){
+  return (activePanel&&live().includes(activePanel))?activePanel:(live()[0]||null);
+}
+function calcSchedule(){
+  if(!state.calc.open||calcSt.raf) return;
+  calcSt.raf=requestAnimationFrame(()=>{calcSt.raf=0;calcRefresh();});
+}
+function calcTick(p){
+  if(state.calc.open&&p===currentCalcPanel()) calcSchedule();
+}
+function syncCalcFollow(){
+  const f=cE('cpFollow');
+  f.classList.toggle('on',calcSt.follow);
+  f.textContent=calcSt.follow?'● En vivo':'Fijado';
+}
+function calcRefresh(){
+  if(!state.calc.open) return;
+  const p=currentCalcPanel();
+  if(!p){cE('cpPair').textContent='—';cE('cpMkt').textContent='';cE('cpLive').textContent='—';calcCompute();return;}
+  if(p.key!==calcSt.key){
+    calcSt.key=p.key;calcSt.follow=true;calcSt.lastPrice=null;
+    cE('cpStop').value='';
+    syncCalcFollow();
+  }
+  cE('cpPair').textContent=p.cfg.symbol;
+  cE('cpMkt').textContent=p.cfg.market==='futures'?'Futuros':'Spot';
+  const d=p.data,price=d&&d.length?d[d.length-1].close:null;
+  const live=cE('cpLive');
+  if(price==null){
+    live.textContent='—';live.className='cp-live';
+  }else{
+    live.textContent=cNf(price,cDec(price));
+    if(calcSt.lastPrice!=null&&price!==calcSt.lastPrice) live.className='cp-live '+(price>calcSt.lastPrice?'up':'down');
+    calcSt.lastPrice=price;
+  }
+  if(calcSt.follow) cE('cpEntry').value=price==null?'':cRaw(price,cDec(price));
+  calcCompute();
+}
+function calcCompute(){
+  const e=cNum(cE('cpEntry').value),s=cNum(cE('cpStop').value),r=cNum(cE('cpRisk').value);
+  const msg=cE('cpMsg'),badge=cE('cpDir');
+  const reset=(t,err)=>{
+    msg.textContent=t;msg.className='cp-msg'+(err?' err':'');
+    badge.textContent='—';badge.className='cp-badge';
+    cE('cpPos').textContent='—';cE('cpPos').dataset.copy='';
+    cE('cpUnits').textContent='—';cE('cpDist').textContent='—';
+    for(let k=1;k<=3;k++){cE('cpP'+k).textContent='—';cE('cpP'+k).dataset.copy='';}
+  };
+  if(isNaN(e)) return reset(calcSt.follow?'Esperando el precio…':'Introduce el precio de entrada.');
+  if(isNaN(s)||isNaN(r)) return reset('Escribe el stop y el dinero que arriesgas.');
+  if(e<=0||s<=0||r<=0) return reset('Los valores tienen que ser mayores que cero.',true);
+  if(e===s) return reset('La entrada y el stop no pueden ser iguales.',true);
+
+  const d=Math.abs(e-s),long=s<e,units=r/d,pos=units*e,pd=cDec(e);
+  msg.textContent='Si salta el stop pierdes '+cNf(r,2)+' $.';msg.className='cp-msg';
+  badge.textContent=long?'LARGO':'CORTO';badge.className='cp-badge '+(long?'long':'short');
+  const pb=cE('cpPos');pb.textContent=cNf(pos,2)+' $';pb.dataset.copy=cRaw(pos,2);
+  cE('cpUnits').textContent=cNf(units,units>=100?2:units>=1?4:6);
+  cE('cpDist').textContent=cNf(d/e*100,2)+' %';
+  const names=['Ganas lo mismo','El doble','El triple'];
+  for(let k=1;k<=3;k++){
+    const t=long?e+k*d:e-k*d;
+    cE('cpG'+k).textContent=names[k-1]+' · +'+cNf(k*r,2)+' $';
+    const b=cE('cpP'+k);
+    if(t<=0){b.textContent='no alcanzable';b.dataset.copy='';}
+    else{b.textContent=cNf(t,pd);b.dataset.copy=cRaw(t,pd);}
+  }
+}
+
+/* copiar al tocar */
+let cpToastT;
+function cpToast(t){
+  const el=cE('cpToast');el.textContent=t;el.classList.add('on');
+  clearTimeout(cpToastT);cpToastT=setTimeout(()=>el.classList.remove('on'),1100);
+}
+function cpCopy(text){
+  const done=()=>cpToast('Copiado: '+text);
+  const fb=()=>{
+    const t=document.createElement('textarea');
+    t.value=text;t.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(t);t.select();
+    try{document.execCommand('copy');done();}catch(e){}
+    t.remove();
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done,fb);else fb();
+}
+calcPanel.addEventListener('click',e=>{
+  const b=e.target.closest('[data-copy]');
+  if(b&&b.dataset.copy) cpCopy(b.dataset.copy);
+});
+
+/* abrir, cerrar y colocar */
+function placeCalc(){
+  const w=calcPanel.offsetWidth,h=calcPanel.offsetHeight;
+  let x=state.calc.x,y=state.calc.y;
+  if(x==null||y==null){x=window.innerWidth-w-24;y=70;}
+  x=Math.max(8,Math.min(window.innerWidth-w-8,x));
+  y=Math.max(8,Math.min(window.innerHeight-h-8,y));
+  state.calc.x=x;state.calc.y=y;
+  calcPanel.style.left=x+'px';calcPanel.style.top=y+'px';
+}
+function openCalc(focus){
+  state.calc.open=true;
+  calcPanel.hidden=false;
+  calcBtn.classList.add('on');
+  placeCalc();
+  calcRefresh();
+  save();
+  if(focus&&window.innerWidth>700) cE('cpStop').focus();
+}
+function closeCalc(){
+  state.calc.open=false;
+  calcPanel.hidden=true;
+  calcBtn.classList.remove('on');
+  save();
+}
+calcBtn.addEventListener('click',()=>{if(state.calc.open) closeCalc();else openCalc(true);});
+cE('cpClose').addEventListener('click',closeCalc);
+window.addEventListener('resize',()=>{if(state.calc.open) placeCalc();});
+
+/* arrastrar desde la cabecera */
+let cpDrag=null;
+const cpHead=cE('cpHead');
+cpHead.addEventListener('pointerdown',e=>{
+  if(e.button!==0||e.target.closest('button')||window.innerWidth<=700) return;
+  const r=calcPanel.getBoundingClientRect();
+  cpDrag={dx:e.clientX-r.left,dy:e.clientY-r.top};
+  try{cpHead.setPointerCapture(e.pointerId);}catch(_){}
+  e.preventDefault();
+});
+cpHead.addEventListener('pointermove',e=>{
+  if(!cpDrag) return;
+  state.calc.x=e.clientX-cpDrag.dx;state.calc.y=e.clientY-cpDrag.dy;
+  placeCalc();
+});
+const cpEnd=()=>{if(cpDrag){cpDrag=null;save();}};
+cpHead.addEventListener('pointerup',cpEnd);
+cpHead.addEventListener('pointercancel',cpEnd);
+
+/* campos */
+cE('cpEntry').addEventListener('input',()=>{
+  if(calcSt.follow){calcSt.follow=false;syncCalcFollow();}
+  calcCompute();
+});
+cE('cpStop').addEventListener('input',calcCompute);
+cE('cpRisk').addEventListener('input',()=>{state.calc.risk=cE('cpRisk').value;save();calcCompute();});
+cE('cpFollow').addEventListener('click',()=>{
+  calcSt.follow=!calcSt.follow;
+  syncCalcFollow();
+  if(calcSt.follow) calcRefresh();
+});
+['cpEntry','cpStop','cpRisk'].forEach(id=>cE(id).addEventListener('keydown',e=>{if(e.key==='Escape') closeCalc();}));
 
 /* ---------- Ocultar / mostrar dibujos ---------- */
 const hideBtn=$('#hideBtn');
@@ -1280,6 +1519,7 @@ window.addEventListener('keydown',e=>{
   else if(k==='escape'){
     if(tool!=='cursor') setTool('cursor');
     else if(soloPanel) exitSolo();
+    else if(state.calc.open) closeCalc();
   }
 });
 
@@ -1293,6 +1533,8 @@ syncHide();
 buildGrid();
 setTool('cursor');
 setActive(panels[0]||null);
+cE('cpRisk').value=state.calc.risk||'';
+if(state.calc.open) openCalc(false);
 loadSymbols();
 requestAnimationFrame(loop);
 })();
