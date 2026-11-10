@@ -224,9 +224,9 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 #mPair .mk{font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:#3a2f12;color:#f5c518;flex-shrink:0}
 #mActs{padding:0 4px;flex-shrink:0}
 #mActs button,#mUndo{background:none;border:0;color:#e6e8ee;display:grid;place-items:center;cursor:pointer;padding:0}
-#mActs button{width:48px;height:52px;border-radius:26px}
+#mActs button{width:44px;height:52px;border-radius:26px}
 #mActs button.on{color:#5b8def}
-#mActs svg,#mUndo svg,#mTool svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#mActs svg,#mUndo svg,#mTool svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 #mUndo{position:fixed;left:12px;bottom:calc(100px + var(--bb));width:54px;height:54px;border-radius:50%;background:var(--pill);border:1px solid rgba(255,255,255,.09);z-index:40;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 #mUndo svg{width:24px;height:24px}
 #mTool{position:fixed;top:calc(var(--st) + 8px);left:50%;transform:translateX(-50%);z-index:45;display:flex;align-items:center;gap:8px;padding:5px 5px 5px 14px;border-radius:999px;background:var(--blue);color:#fff;font-size:14px;max-width:calc(100% - 20px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
@@ -314,6 +314,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
   <button class="mpill" id="mPair" type="button"><span class="coin"></span><span class="nm"></span><span class="tf"></span><span class="mk" hidden>FUT</span></button>
   <div class="mpill" id="mActs">
     <button type="button" id="mDraw" title="Herramientas de dibujo"><svg viewBox="0 0 24 24"><path d="M4 20l1.2-4.6L16.5 4.1a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z"/><path d="M14.5 6l3.5 3.5"/><path d="M3 21.5h8"/></svg></button>
+    <button type="button" id="mLock" title="Bloquear dibujos"></button>
     <button type="button" id="mEye" title="Ocultar dibujos"></button>
     <button type="button" id="mMore" title="Más opciones"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></button>
   </div>
@@ -1175,7 +1176,7 @@ class Panel{
     const sym=this.key;
 
     if(tool==='cursor'){
-      const h=this.hit(x,y);
+      const h=state.lockDrawings?null:this.hit(x,y);
       const l=this.xToL(x),pt=this.pt(x,y);
       if(h&&l!=null&&pt){
         consume=true;
@@ -1232,7 +1233,7 @@ class Panel{
     }
     const ps=this.paneSize();
     const inPane=x>=0&&y>=0&&x<=ps.w&&y<=ps.h;
-    const h=(inPane&&(tool==='cursor'||tool==='eraser'))?this.hit(x,y):null;
+    const h=(inPane&&(tool==='eraser'||(tool==='cursor'&&!state.lockDrawings)))?this.hit(x,y):null;
     const id=h?h.d.id:null;
     if(id!==this.hoverId){this.hoverId=id;this.dirty=true;}
     this.setCursor(h);
@@ -2141,6 +2142,12 @@ mE('mPair').addEventListener('click',()=>{
 // Botones de la barra
 mE('mDraw').addEventListener('click',()=>{syncTools();openSheet('shTools');});
 mE('mEye').addEventListener('click',()=>setHidden(!state.hideDrawings));
+mE('mLock').addEventListener('click',()=>{
+  state.lockDrawings=!state.lockDrawings;save();
+  live().forEach(p=>{p.hoverId=null;p.drag=null;p.dirty=true;});
+  mSync();
+  cpToast(state.lockDrawings?'Dibujos bloqueados':'Dibujos desbloqueados');
+});
 mE('mMore').addEventListener('click',()=>{syncMore();openSheet('shMore');});
 mE('mUndo').addEventListener('click',undo);
 mE('mToolX').addEventListener('click',()=>setTool('cursor'));
@@ -2180,6 +2187,12 @@ function mSync(){
     pill.querySelector('.tf').textContent=p.cfg.interval;
     pill.querySelector('.mk').hidden=p.cfg.market!=='futures';
   }
+  const lk=mE('mLock');
+  lk.innerHTML=state.lockDrawings
+    ?'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>'
+    :'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 7.6-1.7"/></svg>';
+  lk.classList.toggle('on',!!state.lockDrawings);
+  lk.title=state.lockDrawings?'Desbloquear dibujos':'Bloquear dibujos';
   const eye=mE('mEye');
   eye.innerHTML=state.hideDrawings?ICON_EYE_OFF_M:ICON_EYE_M;
   eye.classList.toggle('on',!!state.hideDrawings);
