@@ -69,8 +69,9 @@ label.chk{display:flex;align-items:center;gap:5px;color:var(--muted);cursor:poin
 .fsb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #grid.solo{grid-template-columns:minmax(0,1fr) !important;grid-template-rows:minmax(0,1fr) !important}
 #grid.solo .panel:not(.solo-panel){display:none}
-#fibPanel{position:fixed;width:350px;background:var(--panel);border:1px solid #3b4c66;border-radius:8px;padding:12px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px}
-#fibPanel .fp-title{font-weight:600}
+#fibPanel,#chPanel{position:fixed;width:350px;background:var(--panel);border:1px solid #3b4c66;border-radius:8px;padding:12px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px}
+#fibPanel .fp-title,#chPanel .fp-title{font-weight:600}
+#chPanel{width:300px}
 #fibInput{background:#0f1319;border:1px solid var(--line);color:var(--text);border-radius:5px;padding:6px 8px;font:13px var(--mono);width:100%}
 #fibInput:focus{outline:none;border-color:#4a6283}
 .fp-ext{display:flex;gap:14px;align-items:center;color:var(--muted)}
@@ -182,6 +183,10 @@ html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-use
   .cp-head{cursor:default}
 }
 @media (pointer:coarse){.cp-body input{font-size:16px}}
+
+/* Distintivo de página: color propio en la barra superior y en la etiqueta */
+#topbar{box-shadow:inset 0 -3px 0 var(--page,transparent)}
+.brand .pg{background:var(--page,#4da3ff);color:#0c0f14;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-left:8px;vertical-align:1px}
 </style>
 </head>
 <body>
@@ -200,12 +205,18 @@ html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-use
       <label class="chk" title="Pega la línea al máximo, mínimo, apertura o cierre más cercano. Mantén Ctrl para invertirlo un momento."><input type="checkbox" id="magnet"> Imán</label>
       <button class="tbtn" id="calcBtn" title="Calculadora de riesgo"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M8 18h2M12 18h2"/></svg></button>
       <button class="tbtn" id="fibBtn" title="Editar los niveles de Fibonacci">Niveles Fib</button>
+      <button class="tbtn" id="chBtn" title="Opciones de los canales paralelos">Canal</button>
+      <button class="tbtn" id="expBtn" title="Descarga todos los dibujos: un CSV con fecha y precio de cada punto (para CANALES) y una copia de seguridad JSON">Exportar</button>
+      <button class="tbtn" id="impBtn" title="Carga una copia de seguridad JSON exportada antes (no borra lo que ya tienes)">Importar</button>
+      <input type="file" id="impFile" accept=".json,application/json" hidden>
     </div>
   </header>
   <div id="main">
     <aside id="tools">
       <button data-tool="cursor" title="Cursor (V)"><svg viewBox="0 0 24 24"><path d="M5 3l14 7-6 2-2 7z"/></svg></button>
       <button data-tool="h" title="Línea horizontal (H)"><svg viewBox="0 0 24 24"><path d="M3 12h18"/><circle cx="12" cy="12" r="2.2"/></svg></button>
+      <button data-tool="trend" title="Línea de tendencia (T)"><svg viewBox="0 0 24 24"><path d="M3 20L21 5"/><circle cx="7" cy="16.7" r="2"/><circle cx="14.5" cy="10.4" r="2"/></svg></button>
+      <button data-tool="chan" title="Canal paralelo (C)"><svg viewBox="0 0 24 24"><path d="M3 14L17 3M7 21L21 10"/><path d="M5 17.5L19 6.5" stroke-dasharray="1.5 2.6"/></svg></button>
       <button data-tool="fib" title="Fibonacci (F)"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 10h18M3 15h18M3 20h18"/><path d="M6 19L18 6" stroke-dasharray="2 2.5"/></svg></button>
       <button data-tool="brush" title="Pincel (B)"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></svg></button>
       <button data-tool="eraser" title="Goma de borrar (E)"><svg viewBox="0 0 24 24"><path d="M8 20h11"/><path d="M5 15l9-9 5 5-6 6H9z"/></svg></button>
@@ -262,6 +273,15 @@ html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-use
     <button class="primary" id="fibApply">Aplicar</button>
   </div>
 </div>
+<div id="chPanel" hidden>
+  <div class="fp-title">Canal paralelo</div>
+  <div class="fp-ext">
+    <span>Extender líneas:</span>
+    <label class="chk"><input type="checkbox" id="chExtL"> Izquierda</label>
+    <label class="chk"><input type="checkbox" id="chExtR"> Derecha</label>
+  </div>
+  <div class="fp-help">Se aplica a todos los canales. Niveles: -0.25, 0, 0.5, 1 y 1.25.</div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <script>
@@ -304,10 +324,41 @@ const HINTS={
   cursor:'Arrastra para mover la gráfica. Arrastra un dibujo para moverlo.',
   h:'Haz clic donde quieras la línea. Con el imán se pega a máximos y mínimos (Ctrl lo invierte).',
   fib:'Haz clic en el punto inicial y luego en el final (o arrastra).',
+  trend:'Haz clic en dos puntos (o arrastra). La línea se alarga hacia la derecha.',
+  chan:'Clic 1 y 2: línea base. Clic 3: ancho del canal.',
   brush:'Mantén pulsado y dibuja. Esc para volver al cursor.',
   eraser:'Haz clic sobre un dibujo para borrarlo.'
 };
-const KEY='cryptoGrid.v1';
+// Cada archivo HTML guarda sus datos por separado según su nombre:
+//  index.html (o la carpeta sin nombre de archivo) = página principal, conserva el guardado de siempre.
+//  Cualquier otro nombre (p. ej. dinamica.html) = página independiente con su propio guardado.
+let PAGE='index';
+try{PAGE=decodeURIComponent(location.pathname.split('/').pop()||'').replace(/\.html?$/i,'')||'index';}catch(_){}
+const IS_MAIN=PAGE==='index';
+const KEY=IS_MAIN?'cryptoGrid.v1':'cryptoGrid.v1.'+PAGE;
+const PAGE_LABEL=IS_MAIN?'Principal':PAGE.replace(/[-_]+/g,' ').replace(/^./,c=>c.toUpperCase());
+document.title='Crypto Grid · '+PAGE_LABEL;
+// Color propio de cada página (la principal siempre azul, la dinámica ámbar; el resto según su nombre)
+const PAGE_COLORS={index:'#4da3ff',dinamica:'#f5c518'};
+const PAGE_PALETTE=['#d36bff','#26a69a','#ff8a50','#ef5350','#8bc34a','#00bcd4'];
+const PAGE_COLOR=PAGE_COLORS[PAGE]||PAGE_PALETTE[[...PAGE].reduce((a,c)=>a+c.charCodeAt(0),0)%PAGE_PALETTE.length];
+document.documentElement.style.setProperty('--page',PAGE_COLOR);
+(function(){
+  const b=document.querySelector('.brand');
+  if(b){
+    b.textContent='Crypto Grid';
+    const sp=document.createElement('span');
+    sp.className='pg';
+    sp.textContent=PAGE_LABEL;
+    b.appendChild(sp);
+  }
+  // Icono de la pestaña del navegador: cuadrado de color con la inicial
+  const letter=(PAGE_LABEL[0]||'C').toUpperCase();
+  const svg="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='"+PAGE_COLOR+"'/><text x='16' y='23' font-family='system-ui,sans-serif' font-size='20' font-weight='700' text-anchor='middle' fill='#0c0f14'>"+letter+"</text></svg>";
+  let ic=document.querySelector('link[rel~="icon"]');
+  if(!ic){ic=document.createElement('link');ic.rel='icon';document.head.appendChild(ic);}
+  ic.href='data:image/svg+xml,'+encodeURIComponent(svg);
+})();
 const BRUSH_SMOOTH_PASSES=2; // suavizado mínimo del pincel al soltar (0 = sin suavizado, 3-4 = más fuerte)
 const ICON_EXPAND='<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
 const ICON_COLLAPSE='<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
@@ -358,6 +409,18 @@ function addDrawing(sym,d){
   d.id=Math.random().toString(36).slice(2,9);
   drawingsOf(sym).push(d);
   invalidateAll();
+}
+const CHAN_LEVELS=[-0.25,0,0.5,1,1.25];
+// Alarga el segmento a-b (en píxeles) hasta el borde izquierdo y/o derecho del área de la gráfica
+function extLine(a,b,L,R,w){
+  let p=a,q=b;
+  if(p.x>q.x){const t=p;p=q;q=t;}
+  const dx=q.x-p.x;
+  if(Math.abs(dx)<1e-6) return[p,q];
+  const m=(q.y-p.y)/dx;
+  if(L&&p.x>-2) p={x:-2,y:p.y+m*(-2-p.x)};
+  if(R&&q.x<w+2) q={x:w+2,y:q.y+m*(w+2-q.x)};
+  return[p,q];
 }
 function segDist(px,py,x1,y1,x2,y2){
   const dx=x2-x1,dy=y2-y1,l2=dx*dx+dy*dy;
@@ -770,9 +833,24 @@ class Panel{
     while(lo<hi){const mid=(lo+hi+1)>>1;if(d[mid].time<=t) lo=mid;else hi=mid-1;}
     return lo+(t-d[lo].time)/(d[lo+1].time-d[lo].time);
   }
-  xOf(t){return this.chart.timeScale().logicalToCoordinate(this.timeToLogical(t));}
+  // La librería solo convierte números de vela enteros (con decimales devuelve 0 = borde izquierdo).
+  // Estas dos funciones interpolan entre velas, así un dibujo hecho en 15m se ve bien en 1h, 4h, 1d...
+  lToX(l){
+    const ts=this.chart.timeScale(),f=Math.floor(l),a=ts.logicalToCoordinate(f);
+    if(a==null||l===f) return a;
+    const b=ts.logicalToCoordinate(f+1);
+    return b==null?a:a+(l-f)*(b-a);
+  }
+  xToL(x){
+    const ts=this.chart.timeScale(),i=ts.coordinateToLogical(x);
+    if(i==null) return null;
+    const a=ts.logicalToCoordinate(i),b=ts.logicalToCoordinate(i+1);
+    if(a==null||b==null||b===a) return i;
+    return i+(x-a)/(b-a);
+  }
+  xOf(t){return this.lToX(this.timeToLogical(t));}
   yOf(p){return this.series.priceToCoordinate(p);}
-  tOf(x){const l=this.chart.timeScale().coordinateToLogical(x);return l==null?null:this.logicalToTime(l);}
+  tOf(x){const l=this.xToL(x);return l==null?null:this.logicalToTime(l);}
   pOf(y){return this.series.coordinateToPrice(y);}
   pt(x,y){
     if(!this.data.length) return null;
@@ -784,7 +862,7 @@ class Panel{
     if(!raw) return null;
     const on=!!state.magnet!==!!(e&&(e.ctrlKey||e.metaKey));
     if(on){
-      const l=this.chart.timeScale().coordinateToLogical(x),n=this.data.length;
+      const l=this.xToL(x),n=this.data.length;
       if(l!=null){
         const i=Math.round(l);
         if(i>=0&&i<n){
@@ -833,6 +911,37 @@ class Panel{
     }
     return{x1,x2,y1,y2,xl:Math.min(x1,x2),xr:Math.max(x1,x2),levels};
   }
+  trendGeom(d){
+    const x1=this.xOf(d.p1.t),y1=this.yOf(d.p1.p),x2=this.xOf(d.p2.t),y2=this.yOf(d.p2.p);
+    if(x1==null||y1==null||x2==null||y2==null) return null;
+    return{x1,y1,x2,y2};
+  }
+  chanGeom(d){
+    const x1=this.xOf(d.p1.t),x2=this.xOf(d.p2.t);
+    if(x1==null||x2==null) return null;
+    const lines=[];
+    for(const lv of CHAN_LEVELS){
+      const y1=this.yOf(d.p1.p+lv*d.off),y2=this.yOf(d.p2.p+lv*d.off);
+      if(y1==null||y2==null) return null;
+      lines.push({lv,y1,y2});
+    }
+    return{x1,x2,lines,L0:lines[1],L1:lines[3]};
+  }
+  chanHandles(g){
+    const xm=(g.x1+g.x2)/2;
+    return[
+      ['p1',g.x1,g.L0.y1],['p2',g.x2,g.L0.y2],['p3',g.x1,g.L1.y1],['p4',g.x2,g.L1.y2],
+      ['m0',xm,(g.L0.y1+g.L0.y2)/2],['m1',xm,(g.L1.y1+g.L1.y2)/2]
+    ];
+  }
+  // Distancia en precio entre la línea base (p1-p2) y el punto q, medida en vertical
+  chanOff(p1,p2,q){
+    const x1=this.xOf(p1.t),x2=this.xOf(p2.t),y1=this.yOf(p1.p),y2=this.yOf(p2.p),x=this.xOf(q.t);
+    if(x1==null||x2==null||y1==null||y2==null||x==null) return 0;
+    const by=Math.abs(x2-x1)<1e-6?y1:y1+(y2-y1)*(x-x1)/(x2-x1);
+    const bp=this.pOf(by);
+    return bp==null?0:q.p-bp;
+  }
   hit(x,y){
     if(state.hideDrawings) return null;
     const list=drawingsOf(this.key);
@@ -857,6 +966,20 @@ class Panel{
         if((state.fibExtL||x>=g.xl-6*k)&&x<=xr){
           for(const l of g.levels) if(Math.abs(l.y-y)<=6*k) return{d,part:'body'};
         }
+      }else if(d.type==='trend'){
+        const g=this.trendGeom(d);if(!g) continue;
+        if(Math.hypot(x-g.x1,y-g.y1)<=9*k) return{d,part:'p1'};
+        if(Math.hypot(x-g.x2,y-g.y2)<=9*k) return{d,part:'p2'};
+        const[a,b]=extLine({x:g.x1,y:g.y1},{x:g.x2,y:g.y2},false,true,this.paneSize().w);
+        if(segDist(x,y,a.x,a.y,b.x,b.y)<=Math.max(6,d.w/2+3)*k) return{d,part:'body'};
+      }else if(d.type==='chan'){
+        const g=this.chanGeom(d);if(!g) continue;
+        for(const[part,hx,hy] of this.chanHandles(g)) if(Math.hypot(x-hx,y-hy)<=9*k) return{d,part};
+        const w=this.paneSize().w,tol=Math.max(6,d.w/2+3)*k;
+        for(const l of g.lines){
+          const[a,b]=extLine({x:g.x1,y:l.y1},{x:g.x2,y:l.y2},!!state.chExtL,!!state.chExtR,w);
+          if(segDist(x,y,a.x,a.y,b.x,b.y)<=tol) return{d,part:'body'};
+        }
       }
     }
     return null;
@@ -875,7 +998,7 @@ class Panel{
 
     if(tool==='cursor'){
       const h=this.hit(x,y);
-      const l=this.chart.timeScale().coordinateToLogical(x),pt=this.pt(x,y);
+      const l=this.xToL(x),pt=this.pt(x,y);
       if(h&&l!=null&&pt){
         consume=true;
         this.drag={kind:'move',d:h.d,part:h.part,orig:JSON.parse(JSON.stringify(h.d)),startL:l,startP:pt.p,moved:false};
@@ -900,6 +1023,30 @@ class Panel{
           this.finishFib(pt);
         }
       }
+    }else if(tool==='trend'){
+      consume=true;
+      const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
+      if(pt){
+        if(!this.pending){
+          this.pending={p1:pt,x0:x,y0:y,down:true};
+          this.preview={type:'trend',p1:pt,p2:pt,color:state.color,w:state.width};
+        }else{
+          this.finishTrend(pt);
+        }
+      }
+    }else if(tool==='chan'){
+      consume=true;
+      const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
+      if(pt){
+        if(!this.pending){
+          this.pending={p1:pt,x0:x,y0:y,down:true,stage:1};
+          this.preview={type:'trend',seg:true,p1:pt,p2:pt,color:state.color,w:state.width};
+        }else if(this.pending.stage===1){
+          this.chanSecond(pt);
+        }else{
+          this.finishChan(pt);
+        }
+      }
     }else if(tool==='brush'){
       consume=true;
       const pt=this.pt(x,y);
@@ -919,10 +1066,14 @@ class Panel{
   onMove(e){
     const{x,y}=this.pos(e);
     if(this.drag){this.dragMove(x,y,e);return;}
-    if(tool==='h'||tool==='fib'){
+    if(tool==='h'||tool==='fib'||tool==='trend'||tool==='chan'){
       const s=this.snapPt(x,y,e);
       this.snapMark=s?s.mark:null;
-      if(tool==='fib'&&this.pending&&s) this.preview={type:'fib',p1:this.pending.p1,p2:s.pt,color:state.color};
+      if(this.pending&&s&&this.preview){
+        if(tool==='fib') this.preview={type:'fib',p1:this.pending.p1,p2:s.pt,color:state.color};
+        else if(tool==='trend'||this.pending.stage===1) this.preview.p2=s.pt;
+        else this.preview.off=this.chanOff(this.pending.p1,this.pending.p2,s.pt);
+      }
       this.dirty=true;
       return;
     }
@@ -940,15 +1091,19 @@ class Panel{
       if(dr.kind==='erase'&&dr.erased) save();
       if(dr.kind==='brush'){
         const p=this.preview;this.preview=null;
-        if(p&&p.pts.length>=2) addDrawing(this.key,{type:'brush',pts:this.smoothStroke(p.pts),color:p.color,w:p.w});
+        if(p&&p.pts.length>=2) addDrawing(this.key,{type:'brush',pts:this.smoothStroke(p.pts),color:p.color,w:p.w,tf:this.cfg.interval,creado:Math.floor(Date.now()/1000)});
         this.dirty=true;
       }
     }
-    if(tool==='fib'&&this.pending&&this.pending.down){
+    if((tool==='fib'||tool==='trend'||tool==='chan')&&this.pending&&this.pending.down){
       const{x,y}=this.pos(e);
       if(Math.hypot(x-this.pending.x0,y-this.pending.y0)>6){
         const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
-        if(pt) this.finishFib(pt);
+        if(pt){
+          if(tool==='fib') this.finishFib(pt);
+          else if(tool==='trend') this.finishTrend(pt);
+          else this.chanSecond(pt);
+        }
       }else{
         this.pending.down=false;
       }
@@ -972,6 +1127,21 @@ class Panel{
   }
   finishFib(p2){
     addDrawing(this.key,{type:'fib',p1:this.pending.p1,p2,color:state.color});
+    setTool('cursor');
+  }
+  finishTrend(p2){
+    addDrawing(this.key,{type:'trend',p1:this.pending.p1,p2,color:state.color,w:state.width});
+    setTool('cursor');
+  }
+  chanSecond(p2){
+    const pd=this.pending;
+    pd.p2=p2;pd.stage=2;pd.down=false;
+    this.preview={type:'chan',p1:pd.p1,p2,off:0,color:state.color,w:state.width};
+    this.dirty=true;
+  }
+  finishChan(q){
+    const pd=this.pending;
+    addDrawing(this.key,{type:'chan',p1:pd.p1,p2:pd.p2,off:this.chanOff(pd.p1,pd.p2,q),color:state.color,w:state.width});
     setTool('cursor');
   }
   eraseAt(x,y){
@@ -998,11 +1168,11 @@ class Panel{
       return;
     }
     if(dr.kind==='move'){
-      const pt=this.pt(x,y),l=this.chart.timeScale().coordinateToLogical(x);
+      const pt=this.pt(x,y),l=this.xToL(x);
       if(!pt||l==null) return;
       dr.moved=true;
       const d=dr.d,o=dr.orig,dL=l-dr.startL,dP=pt.p-dr.startP;
-      const s=(d.type==='h'||(d.type==='fib'&&dr.part!=='body'))?this.snapPt(x,y,e):null;
+      const s=(d.type==='h'||(d.type!=='brush'&&dr.part!=='body'))?this.snapPt(x,y,e):null;
       this.snapMark=s?s.mark:null;
       const shift=q=>({t:Math.round(this.logicalToTime(this.timeToLogical(q.t)+dL)),p:q.p+dP});
       if(d.type==='h'){
@@ -1015,12 +1185,33 @@ class Panel{
         else if(dr.part==='p2') d.p2=s?s.pt:pt;
         else{d.p1=shift(o.p1);d.p2=shift(o.p2);}
       }
+      else if(d.type==='trend'){
+        if(dr.part==='p1') d.p1=s?s.pt:pt;
+        else if(dr.part==='p2') d.p2=s?s.pt:pt;
+        else{d.p1=shift(o.p1);d.p2=shift(o.p2);}
+      }
+      else if(d.type==='chan'){
+        const q=s?s.pt:pt;
+        if(dr.part==='p1') d.p1=q;
+        else if(dr.part==='p2') d.p2=q;
+        else if(dr.part==='p3') d.p1={t:q.t,p:q.p-o.off};
+        else if(dr.part==='p4') d.p2={t:q.t,p:q.p-o.off};
+        else if(dr.part==='m1'){
+          // cambia el ancho: mueve la línea 1, la base queda fija
+          d.off=(s&&s.mark)?this.chanOff(o.p1,o.p2,s.pt):o.off+dP;
+        }else if(dr.part==='m0'){
+          // mueve la línea base, la línea 1 queda fija
+          const dd=(s&&s.mark)?this.chanOff(o.p1,o.p2,s.pt):dP;
+          d.p1={t:o.p1.t,p:o.p1.p+dd};d.p2={t:o.p2.t,p:o.p2.p+dd};d.off=o.off-dd;
+        }
+        else{d.p1=shift(o.p1);d.p2=shift(o.p2);}
+      }
       invalidateAll();
     }
   }
   setCursor(h){
     const c=this.body.classList;
-    c.toggle('cur-cross',tool==='h'||tool==='fib'||tool==='brush');
+    c.toggle('cur-cross',tool==='h'||tool==='fib'||tool==='brush'||tool==='trend'||tool==='chan');
     c.toggle('cur-move',tool==='cursor'&&!!h);
     c.toggle('cur-del',tool==='eraser');
   }
@@ -1107,7 +1298,31 @@ class Panel{
           ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fill();ctx.stroke();
         }
       }
+    }else if(d.type==='trend'){
+      const g=this.trendGeom(d);if(!g) return;
+      const[a,b]=extLine({x:g.x1,y:g.y1},{x:g.x2,y:g.y2},false,!d.seg,ps.w);
+      ctx.strokeStyle=d.color;ctx.lineWidth=d.w+(hot?1:0);
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+      if(hot) this.drawHandles(ctx,[[g.x1,g.y1],[g.x2,g.y2]],[]);
+    }else if(d.type==='chan'){
+      const g=this.chanGeom(d);if(!g) return;
+      ctx.strokeStyle=d.color;ctx.lineWidth=d.w+(hot?1:0);
+      ctx.beginPath();
+      for(const l of g.lines){
+        const[a,b]=extLine({x:g.x1,y:l.y1},{x:g.x2,y:l.y2},!!state.chExtL,!!state.chExtR,ps.w);
+        ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+      }
+      ctx.stroke();
+      if(hot){
+        const hs=this.chanHandles(g);
+        this.drawHandles(ctx,hs.slice(0,4).map(h=>[h[1],h[2]]),hs.slice(4).map(h=>[h[1],h[2]]));
+      }
     }
+  }
+  drawHandles(ctx,circ,sq){
+    ctx.setLineDash([]);ctx.fillStyle='#0c0f14';ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;
+    for(const[px,py] of circ){ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fill();ctx.stroke();}
+    for(const[px,py] of sq){ctx.beginPath();ctx.rect(px-4,py-4,8,8);ctx.fill();ctx.stroke();}
   }
 }
 
@@ -1252,7 +1467,25 @@ function syncOpts(){
   $('#fibExtR').checked=!!state.fibExt;
   $('#fibExtL').checked=!!state.fibExtL;
   $('#magnet').checked=!!state.magnet;
+  $('#chExtL').checked=!!state.chExtL;
+  $('#chExtR').checked=!!state.chExtR;
 }
+$('#chExtL').addEventListener('change',e=>{state.chExtL=e.target.checked;invalidateAll();});
+$('#chExtR').addEventListener('change',e=>{state.chExtR=e.target.checked;invalidateAll();});
+const chPanel=$('#chPanel'),chBtn=$('#chBtn');
+function showChPanel(show){
+  if(show){
+    const r=chBtn.getBoundingClientRect();
+    chPanel.style.top=(r.bottom+6)+'px';
+    chPanel.style.right=Math.max(8,window.innerWidth-r.right)+'px';
+  }
+  chPanel.hidden=!show;
+  chBtn.classList.toggle('on',show);
+}
+chBtn.addEventListener('click',()=>showChPanel(chPanel.hidden));
+document.addEventListener('pointerdown',e=>{
+  if(!chPanel.hidden&&!chPanel.contains(e.target)&&e.target!==chBtn) showChPanel(false);
+},true);
 $('#width').addEventListener('change',e=>{state.width=+e.target.value;save();});
 $('#magnet').addEventListener('change',e=>{state.magnet=e.target.checked;save();});
 $('#fibExtR').addEventListener('change',e=>{state.fibExt=e.target.checked;invalidateAll();});
@@ -1502,6 +1735,85 @@ document.addEventListener('pointerdown',e=>{
   if(!fibPanel.hidden&&!fibPanel.contains(e.target)&&e.target!==fibBtn) showFibPanel(false);
 },true);
 
+/* ---------- Exportar / importar dibujos ---------- */
+// CSV (separador ;), una fila por dibujo. Fechas en UTC. Columna "puntos": fecha@precio separados por |
+const pad2=n=>String(n).padStart(2,'0');
+function isoUTC(t){const d=new Date(t*1000);return d.getUTCFullYear()+'-'+pad2(d.getUTCMonth()+1)+'-'+pad2(d.getUTCDate())+' '+pad2(d.getUTCHours())+':'+pad2(d.getUTCMinutes());}
+function stamp(){const d=new Date();return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'_'+pad2(d.getHours())+pad2(d.getMinutes());}
+function fmtP(p){return Number(p.toPrecision(10)).toString();}
+function downloadText(name,text,type){
+  const blob=new Blob([text],{type});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function drawingsCSV(){
+  const rows=[['linea_id','moneda','mercado','tf','tipo','color','grosor','inicio','fin','precio_ini','precio_fin','n_puntos','puntos'].join(';')];
+  for(const key of Object.keys(state.drawings).sort()){
+    const fut=key.endsWith(':F'),sym=fut?key.slice(0,-2):key;
+    for(const d of state.drawings[key]||[]){
+      let pts;
+      if(d.type==='brush') pts=(d.pts||[]).slice().sort((a,b)=>a.t-b.t);
+      else if(d.type==='fib') pts=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
+      else if(d.type==='h') pts=[{t:d.t,p:d.price}];
+      else if(d.type==='trend') pts=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
+      else if(d.type==='chan'){
+        // base inicio, paralela inicio, paralela fin, base fin (inicio/fin = línea base)
+        const[b1,b2]=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
+        pts=[b1,{t:b1.t,p:b1.p+d.off},{t:b2.t,p:b2.p+d.off},b2];
+      }
+      else continue;
+      pts=pts.filter(q=>q&&q.t!=null&&isFinite(q.p));
+      if(!pts.length) continue;
+      const a=pts[0],b=pts[pts.length-1];
+      rows.push([d.id,sym,fut?'futures':'spot',d.tf||'',d.type,d.color||'',d.w||'',
+        isoUTC(a.t),isoUTC(b.t),fmtP(a.p),fmtP(b.p),pts.length,
+        pts.map(q=>isoUTC(q.t)+'@'+fmtP(q.p)).join('|')].join(';'));
+    }
+  }
+  return rows.join('\r\n')+'\r\n';
+}
+function exportDrawings(){
+  const n=Object.values(state.drawings).reduce((s,l)=>s+(l?l.length:0),0);
+  if(!n){alert('No hay dibujos que exportar en esta página.');return;}
+  const s=stamp();
+  downloadText(`lineas_${PAGE}_${s}.csv`,'﻿'+drawingsCSV(),'text/csv;charset=utf-8');
+  setTimeout(()=>downloadText(`dibujos_${PAGE}_${s}.json`,JSON.stringify({pagina:PAGE,exportado:new Date().toISOString(),drawings:state.drawings}),'application/json'),300);
+}
+function importDrawings(obj){
+  const src=obj&&obj.drawings&&typeof obj.drawings==='object'?obj.drawings:obj;
+  if(!src||typeof src!=='object'||Array.isArray(src)) throw new Error('formato');
+  let added=0,skipped=0;
+  for(const key of Object.keys(src)){
+    if(!Array.isArray(src[key])) continue;
+    const list=drawingsOf(key),ids=new Set(list.map(d=>d.id));
+    for(const d of src[key]){
+      if(!d||!/^(brush|fib|h|trend|chan)$/.test(d.type)){skipped++;continue;}
+      if(d.id&&ids.has(d.id)){skipped++;continue;}
+      const c=JSON.parse(JSON.stringify(d));
+      if(!c.id) c.id=Math.random().toString(36).slice(2,9);
+      list.push(c);ids.add(c.id);added++;
+    }
+  }
+  invalidateAll();
+  return{added,skipped};
+}
+$('#expBtn').addEventListener('click',exportDrawings);
+$('#impBtn').addEventListener('click',()=>$('#impFile').click());
+$('#impFile').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const res=importDrawings(JSON.parse(r.result));
+      alert(`Importados ${res.added} dibujos.`+(res.skipped?` ${res.skipped} ya estaban o no eran válidos.`:''));
+    }catch(err){alert('No se pudo leer el archivo. Tiene que ser un JSON exportado con el botón Exportar.');}
+  };
+  r.readAsText(f);
+});
+
 function undo(){
   if(state.hideDrawings) return;
   const p=activePanel||live()[0];
@@ -1514,7 +1826,7 @@ window.addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
   if((e.ctrlKey||e.metaKey)&&k==='z'){e.preventDefault();undo();return;}
   if(e.ctrlKey||e.metaKey||e.altKey) return;
-  const map={v:'cursor',h:'h',f:'fib',b:'brush',e:'eraser'};
+  const map={v:'cursor',h:'h',f:'fib',b:'brush',e:'eraser',t:'trend',c:'chan'};
   if(map[k]) setTool(map[k]);
   else if(k==='escape'){
     if(tool!=='cursor') setTool('cursor');
