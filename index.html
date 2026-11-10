@@ -195,9 +195,9 @@ html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-use
 
 /* =================== VERSIÓN MÓVIL (estilo TradingView) =================== */
 :root{--bg:#2b2e37;--panel:#1e2029;--line:#3a3e4a;--text:#e6e8ee;--muted:#9598a1;--sel:#3d4250;
-  --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);--blue:#2962ff;--pill:rgba(46,48,56,.94)}
+  --sb:env(safe-area-inset-bottom,0px);--bb:max(6px,calc(env(safe-area-inset-bottom,0px) - 20px));--st:env(safe-area-inset-top,0px);--blue:#2962ff;--pill:rgba(46,48,56,.94)}
 html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#131418}
-#app{height:100%;height:100dvh;padding-top:var(--st);padding-bottom:calc(78px + var(--sb))}
+#app{height:100%;height:100dvh;padding-top:var(--st);padding-bottom:calc(66px + var(--bb))}
 #topbar,#tools{display:none !important}
 .phead{display:none !important}
 #main{min-height:0}
@@ -215,7 +215,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 #grid:not(.g1) .legend{transform:scale(.78);transform-origin:0 0}
 
 /* barra inferior */
-#mbar{position:fixed;left:10px;right:10px;bottom:calc(10px + var(--sb));display:flex;gap:10px;z-index:40}
+#mbar{position:fixed;left:10px;right:10px;bottom:var(--bb);display:flex;gap:10px;z-index:40}
 .mpill{display:flex;align-items:center;height:58px;border-radius:29px;background:var(--pill);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.09);color:#fff}
 #mPair{flex:1;min-width:0;gap:8px;padding:0 12px 0 6px;font:600 17px system-ui,-apple-system,sans-serif;text-align:left;cursor:pointer}
 #mPair .coin{width:42px;height:42px;font-size:19px}
@@ -227,7 +227,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 #mActs button{width:48px;height:52px;border-radius:26px}
 #mActs button.on{color:#5b8def}
 #mActs svg,#mUndo svg,#mTool svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-#mUndo{position:fixed;left:12px;bottom:calc(118px + var(--sb));width:54px;height:54px;border-radius:50%;background:var(--pill);border:1px solid rgba(255,255,255,.09);z-index:40;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+#mUndo{position:fixed;left:12px;bottom:calc(100px + var(--bb));width:54px;height:54px;border-radius:50%;background:var(--pill);border:1px solid rgba(255,255,255,.09);z-index:40;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 #mUndo svg{width:24px;height:24px}
 #mTool{position:fixed;top:calc(var(--st) + 8px);left:50%;transform:translateX(-50%);z-index:45;display:flex;align-items:center;gap:8px;padding:5px 5px 5px 14px;border-radius:999px;background:var(--blue);color:#fff;font-size:14px;max-width:calc(100% - 20px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
 #mTool span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -268,7 +268,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 #fibPanel{left:12px !important;right:12px !important;top:calc(var(--st) + 60px) !important;width:auto !important;z-index:80}
 #fibPanel .fp-ext{display:none}
 #calcPanel{z-index:75}
-#cpToast{bottom:calc(150px + var(--sb))}
+#cpToast{bottom:calc(130px + var(--bb))}
 </style>
 </head>
 <body>
