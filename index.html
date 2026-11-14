@@ -546,6 +546,13 @@ function addDrawing(sym,d){
   drawingsOf(sym).push(d);
   invalidateAll();
 }
+const CROSS_TOOLS=new Set(['h','trend','chan','fib']);
+const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function fmtCrossTime(t,iv){
+  const d=new Date(t*1000),dd=d.getDate()+' '+MESES[d.getMonth()];
+  if(/^(1d|1w|1M|3M|12M)$/.test(iv)) return dd+' '+String(d.getFullYear()).slice(2);
+  return dd+', '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
 const CHAN_LEVELS=[-0.25,0,0.5,1,1.25];
 // Alarga el segmento a-b (en píxeles) hasta el borde izquierdo y/o derecho del área de la gráfica
 function extLine(a,b,L,R,w){
@@ -1166,6 +1173,7 @@ class Panel{
 
   /* --- eventos --- */
   onDown(e){
+    if(CROSS_TOOLS.has(tool)){this.crossDown(e);return;}
     this.consumed=false;
     this.touch=e.pointerType==='touch';
     if(e.button!==0) return;
@@ -1222,6 +1230,7 @@ class Panel{
     }
   }
   onMove(e){
+    if(CROSS_TOOLS.has(tool)){this.crossMove(e);return;}
     const{x,y}=this.pos(e);
     if(this.drag){this.dragMove(x,y,e);return;}
     if(tool==='h'||tool==='fib'||tool==='trend'||tool==='chan'){
@@ -1239,6 +1248,7 @@ class Panel{
     this.setCursor(h);
   }
   onUp(e){
+    if(CROSS_TOOLS.has(tool)){this.crossUp(e);return;}
     const dr=this.drag;this.drag=null;
     if(dr){
       if(dr.kind==='move'){this.snapMark=null;this.dirty=true;if(dr.moved) save();}
@@ -1264,6 +1274,101 @@ class Panel{
       }
     }
     this.consumed=false;
+  }
+  /* --- Cruz de precisión (como TradingView móvil) ---
+     Un dedo mueve la cruz a distancia (no queda debajo del dedo).
+     Un toque corto fija el punto donde está la cruz. Dos dedos: zoom/desplazar la gráfica. */
+  crossInit(){
+    const ps=this.paneSize();
+    if(!this.cross) this.cross={x:ps.w*0.5,y:ps.h*0.45};
+    this.crossSnap();
+  }
+  crossSnap(){
+    const ps=this.paneSize(),c=this.cross;
+    c.x=Math.max(0,Math.min(ps.w-1,c.x));c.y=Math.max(0,Math.min(ps.h-1,c.y));
+    const s=this.snapPt(c.x,c.y,null);
+    this.crossPt=s?s.pt:null;
+    this.snapMark=s?s.mark:null;
+    if(this.pending&&this.crossPt) this.updPreview(this.crossPt);
+    this.dirty=true;
+  }
+  crossDown(e){
+    this.consumed=false;
+    if(e.button!==0&&e.pointerType==='mouse') return;
+    setActive(this);
+    if(this.cg){
+      // segundo dedo: se cancela el gesto y la gráfica hace zoom / desplaza
+      this.cg=null;this.multi=true;
+      return;
+    }
+    if(this.multi) return;
+    const{x,y}=this.pos(e),ps=this.paneSize();
+    if(x<0||y<0||x>this.ow||y>this.oh) return;
+    this.crossInit();
+    this.cg={id:e.pointerId,x0:e.clientX,y0:e.clientY,cx0:this.cross.x,cy0:this.cross.y,moved:false};
+    this.consumed=true;
+    e.preventDefault();e.stopPropagation();
+    try{this.body.setPointerCapture(e.pointerId);}catch(_){}
+  }
+  crossMove(e){
+    const g=this.cg;
+    if(!g||e.pointerId!==g.id) return;
+    const dx=e.clientX-g.x0,dy=e.clientY-g.y0;
+    if(!g.moved&&Math.hypot(dx,dy)>7) g.moved=true;
+    if(!g.moved) return;
+    this.cross.x=g.cx0+dx;this.cross.y=g.cy0+dy;
+    this.crossSnap();
+  }
+  crossUp(e){
+    const g=this.cg;
+    if(this.multi){
+      // cuando se levantan los dedos, volver al modo cruz
+      clearTimeout(this.multiT);this.multiT=setTimeout(()=>{this.multi=false;},250);
+      this.consumed=false;return;
+    }
+    this.consumed=false;
+    if(!g||e.pointerId!==g.id) return;
+    this.cg=null;
+    if(g.moved||e.type==='pointercancel') return;
+    // toque corto: fijar el punto donde está la cruz
+    this.crossSnap();
+    const pt=this.crossPt;
+    if(!pt) return;
+    if(tool==='h'){
+      addDrawing(this.key,{type:'h',t:pt.t,price:pt.p,color:state.color,w:state.width});
+      setTool('cursor');return;
+    }
+    if(!this.pending){
+      this.pending={p1:pt,stage:1};
+      this.preview=tool==='fib'?{type:'fib',p1:pt,p2:pt,color:state.color}:{type:'trend',seg:tool==='chan',p1:pt,p2:pt,color:state.color,w:state.width};
+      this.dirty=true;
+    }else{
+      this.nextPoint(pt);
+    }
+    if(typeof mToolSync==='function') mToolSync();
+  }
+  drawCross(ctx,ps){
+    const c=this.cross;if(!c) return;
+    const m=this.snapMark,x=m?m.x:c.x,y=m?m.y:c.y;
+    ctx.save();
+    ctx.setLineDash([5,4]);ctx.lineWidth=1;ctx.strokeStyle='rgba(220,224,232,0.85)';
+    ctx.beginPath();ctx.moveTo(0,y+0.5);ctx.lineTo(ps.w,y+0.5);ctx.moveTo(x+0.5,0);ctx.lineTo(x+0.5,ps.h);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#fff';ctx.strokeStyle='#2962ff';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.restore();
+    // etiquetas de precio y fecha en los ejes
+    const pt=this.crossPt;if(!pt) return;
+    ctx.save();
+    ctx.font='11px -apple-system,system-ui,sans-serif';ctx.textBaseline='middle';
+    const ptxt=pt.p.toFixed(this.dec),ph=20;
+    ctx.fillStyle='#2962ff';ctx.fillRect(ps.w,y-ph/2,ps.psw,ph);
+    ctx.fillStyle='#fff';ctx.textAlign='left';ctx.fillText(ptxt,ps.w+6,y);
+    const ttxt=fmtCrossTime(pt.t,this.cfg.interval),tw=ctx.measureText(ttxt).width+14;
+    let tx=Math.max(0,Math.min(ps.w-tw,x-tw/2));
+    ctx.fillStyle='#2962ff';ctx.fillRect(tx,ps.h,tw,this.oh-ps.h);
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(ttxt,tx+tw/2,ps.h+(this.oh-ps.h)/2);
+    ctx.restore();
   }
   smoothStroke(pts){
     if(pts.length<3||BRUSH_SMOOTH_PASSES<1) return pts;
@@ -1403,7 +1508,7 @@ class Panel{
     ctx.beginPath();ctx.rect(0,0,ps.w,ps.h);ctx.clip();
     for(const d of list) this.drawOne(ctx,d,ps,d.id===this.hoverId);
     if(this.preview) this.drawOne(ctx,this.preview,ps,true);
-    if(this.snapMark){
+    if(this.snapMark&&!(CROSS_TOOLS.has(tool)&&this.cross)){
       ctx.setLineDash([]);ctx.lineWidth=1.5;
       ctx.strokeStyle='#ffffff';ctx.fillStyle='rgba(255,255,255,0.25)';
       ctx.beginPath();ctx.arc(this.snapMark.x,this.snapMark.y,5,0,Math.PI*2);ctx.fill();ctx.stroke();
@@ -1414,6 +1519,7 @@ class Panel{
       if(d.t!=null){const x0=this.xOf(d.t);if(x0==null||x0>ps.w) continue;}
       this.drawTag(ctx,d.price,d.color,ps);
     }
+    if(CROSS_TOOLS.has(tool)&&this.cross) this.drawCross(ctx,ps);
   }
   drawTag(ctx,price,color,ps){
     const y=this.yOf(price);
@@ -1501,9 +1607,11 @@ function setTool(t){
   $('#hint').textContent=HINTS[t]||'';
   live().forEach(p=>{
     p.pending=null;p.preview=null;p.drag=null;p.hoverId=null;p.snapMark=null;p.dirty=true;
+    p.cross=null;p.crossPt=null;p.cg=null;p.multi=false;
     p.setCursor(null);
     p.body.classList.toggle('tool-on',t!=='cursor');
   });
+  if(CROSS_TOOLS.has(t)){const ap=(activePanel&&live().includes(activePanel))?activePanel:live()[0];if(ap) ap.crossInit();}
   if(typeof mToolSync==='function') mToolSync();
 }
 $('#tools').addEventListener('click',e=>{
@@ -2011,10 +2119,10 @@ if(![1,2,4].includes(state.layout)) state.layout=state.layout>=4?4:1;
 const mE=id=>document.getElementById(id);
 const TOOL_NAMES={cursor:'Cursor',h:'Horizontal',trend:'Tendencia',chan:'Canal',fib:'Fibonacci',brush:'Pincel',eraser:'Goma'};
 const TOOL_TIPS={
-  h:'Toca donde quieras la línea',
-  trend:'Toca 2 puntos (o arrastra)',
-  chan:'Toca 2 puntos y luego el ancho',
-  fib:'Toca inicio y final (o arrastra)',
+  h:'Mueve la cruz y toca para fijar',
+  trend:'Punto 1: mueve la cruz y toca',
+  chan:'Punto 1: mueve la cruz y toca',
+  fib:'Inicio: mueve la cruz y toca',
   brush:'Dibuja con el dedo',
   eraser:'Toca un dibujo para borrarlo'
 };
@@ -2201,7 +2309,14 @@ function mToolSync(){
   const chip=mE('mTool');
   mE('mDraw').classList.toggle('on',tool!=='cursor');
   if(tool==='cursor'){chip.hidden=true;return;}
-  mE('mToolTxt').textContent=TOOL_NAMES[tool]+' · '+(TOOL_TIPS[tool]||'');
+  let tip=TOOL_TIPS[tool]||'';
+  const cp=curPanel(),pd=cp&&cp.pending;
+  if(pd){
+    if(tool==='fib') tip='Final: mueve la cruz y toca';
+    else if(tool==='trend') tip='Punto 2: mueve la cruz y toca';
+    else if(tool==='chan') tip=pd.stage===1?'Punto 2: mueve la cruz y toca':'Ancho: mueve la cruz y toca';
+  }
+  mE('mToolTxt').textContent=TOOL_NAMES[tool]+' · '+tip;
   chip.hidden=false;
 }
 
