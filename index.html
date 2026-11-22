@@ -224,7 +224,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 #mPair .mk{font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:#3a2f12;color:#f5c518;flex-shrink:0}
 #mActs{padding:0 4px;flex-shrink:0}
 #mActs button,#mUndo{background:none;border:0;color:#e6e8ee;display:grid;place-items:center;cursor:pointer;padding:0}
-#mActs button{width:44px;height:52px;border-radius:26px}
+#mActs button{width:40px;height:52px;border-radius:26px}
 #mActs button.on{color:#5b8def}
 #mActs svg,#mUndo svg,#mTool svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 #mUndo{position:fixed;left:12px;bottom:calc(100px + var(--bb));width:54px;height:54px;border-radius:50%;background:var(--pill);border:1px solid rgba(255,255,255,.09);z-index:40;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
@@ -269,6 +269,24 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 #fibPanel .fp-ext{display:none}
 #calcPanel{z-index:75}
 #cpToast{bottom:calc(130px + var(--bb))}
+
+/* Medias móviles (hoja inferior) */
+#sheetBg.on.light{background:rgba(0,0,0,.14)}
+.ma-sub{color:var(--muted);font-size:13px;margin:-2px 0 12px}
+.ma-row{display:grid;grid-template-columns:46px 74px minmax(0,1fr) 40px 66px;gap:8px;align-items:center;margin-bottom:10px}
+.ma-row.off>:not(.ma-sw){opacity:.45}
+.ma-sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:14px;background:#3a3e4a;position:relative;transition:background .2s;margin:0;cursor:pointer}
+.ma-sw::after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}
+.ma-sw:checked{background:var(--blue)}
+.ma-sw:checked::after{transform:translateX(18px)}
+.ma-row select,.ma-row .ma-len{height:40px;width:100%;background:#2a2d37;border:1px solid transparent;color:var(--text);border-radius:10px;padding:0 6px;font-size:16px;font-family:inherit}
+.ma-row .ma-len{text-align:center;font-weight:600;font-family:var(--mono)}
+.ma-row .ma-len:focus{outline:none;border-color:var(--blue)}
+.ma-row .ma-len.bad{border-color:#ef5350}
+.sh-input.raw{text-transform:none}
+#shTD a{color:#5b8def}
+#shTD select.sh-input{appearance:none;-webkit-appearance:none}
+.ma-row input[type=color]{width:40px;height:40px;padding:3px;border:0;border-radius:10px;background:#2a2d37;cursor:pointer}
 </style>
 </head>
 <body>
@@ -316,6 +334,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
     <button type="button" id="mDraw" title="Herramientas de dibujo"><svg viewBox="0 0 24 24"><path d="M4 20l1.2-4.6L16.5 4.1a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z"/><path d="M14.5 6l3.5 3.5"/><path d="M3 21.5h8"/></svg></button>
     <button type="button" id="mLock" title="Bloquear dibujos"></button>
     <button type="button" id="mEye" title="Ocultar dibujos"></button>
+    <button type="button" id="mMA" title="Medias móviles de esta gráfica (EMA, SMA o HMA)"><svg viewBox="0 0 24 24"><path d="M3 17c3.5-9 6.5-9 9-4s5.5 4 9-7"/><path d="M3 12c3-5 6-5 9-1s6 3 9-3" stroke-dasharray="1.5 2.6"/></svg></button>
     <button type="button" id="mMore" title="Más opciones"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></button>
   </div>
 </div>
@@ -325,7 +344,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
   <input id="symSearch" class="sh-input" placeholder="Buscar par: BTC, SOL, PEPE…" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
   <div class="sh-sec">Temporalidad</div>
   <div class="sh-grid" id="tfGrid"></div>
-  <div class="sh-seg" id="mktSeg"><button type="button" data-m="spot">Spot</button><button type="button" data-m="futures">Futuros</button></div>
+  <div class="sh-seg" id="mktSeg"><button type="button" data-m="spot">Spot</button><button type="button" data-m="futures">Futuros</button><button type="button" data-m="hl">Hyperliquid</button><button type="button" data-m="td">Twelve Data</button></div>
   <div class="sh-sec">Pares</div>
   <div class="sym-list" id="symList"></div>
 </div>
@@ -345,6 +364,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
   <div class="sh-list">
     <button type="button" data-act="calc"><span>Calculadora de riesgo</span></button>
     <button type="button" data-act="fib"><span>Niveles de Fibonacci</span><span class="st" id="fibSt"></span></button>
+    <button type="button" data-act="td"><span>Twelve Data (clave)</span><span class="st" id="tdSt"></span></button>
     <button type="button" data-act="inv"><span>Invertir eje de precios</span><span class="st" id="invSt"></span></button>
     <button type="button" data-act="exp"><span>Exportar dibujos</span></button>
     <button type="button" data-act="imp"><span>Importar dibujos</span></button>
@@ -361,8 +381,29 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
     <label class="sh-tog"><span>Hacia la derecha</span><span id="slChR"></span></label>
   </div>
 </div>
+<div class="sheet" id="shMA">
+  <div class="sh-grab"></div>
+  <div class="sh-sec" style="margin-top:4px">Medias móviles</div>
+  <div class="ma-sub" id="maSub"></div>
+  <div id="maRows"></div>
+  <div class="sh-list"><button type="button" id="maReset"><span>Restablecer</span></button></div>
+</div>
+<div class="sheet" id="shTD">
+  <div class="sh-grab"></div>
+  <div class="sh-sec" style="margin-top:4px">Twelve Data</div>
+  <div class="ma-sub">Datos reales de oro, plata, acciones, ETF y forex con años de historial. Necesitas una clave gratuita: regístrate en <a href="https://twelvedata.com/" target="_blank" rel="noopener">twelvedata.com</a> y cópiala de tu panel (API Keys).</div>
+  <input id="tdKey" class="sh-input raw" type="text" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Pega aquí tu clave">
+  <div class="sh-sec">Actualizar velas cada</div>
+  <select id="tdRef" class="sh-input raw"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option><option value="0">Nunca</option></select>
+  <div class="ma-sub" id="tdStat" style="margin-top:14px"></div>
+  <div class="ma-sub">Plan gratuito: 8 peticiones por minuto y 800 al día. Cada gráfica gasta 1 al cargar (hasta 5000 velas), 1 cada vez que llegas al principio y quieres más historial, y 1 en cada actualización. Solo se actualiza con la app visible.</div>
+  <div class="fp-err" id="tdErr"></div>
+  <div class="sh-seg" style="grid-template-columns:1fr"><button type="button" id="tdSave" class="on">Guardar</button></div>
+</div>
 <datalist id="symlist"></datalist>
 <datalist id="symlistF"></datalist>
+<datalist id="symlistH"></datalist>
+<datalist id="symlistT"></datalist>
 <div id="calcPanel" hidden>
   <div class="cp-head" id="cpHead"><span>Calculadora de riesgo</span><button type="button" id="cpClose" title="Cerrar">×</button></div>
   <div class="cp-body">
@@ -448,6 +489,126 @@ function aggregate(bars,iv){
 }
 const REST=['https://api.binance.com','https://data-api.binance.vision'];
 const REST_F='https://fapi.binance.com';
+// Hyperliquid: mercados TradFi (HIP-3). Los símbolos llevan delante el nombre del dex, p. ej. xyz:NVDA
+const HL_INFO='https://api.hyperliquid.xyz/info';
+const HL_WS='wss://api.hyperliquid.xyz/ws';
+const HL_DEFAULT='xyz:GOLD';
+const HL_FALLBACK=['xyz:GOLD','xyz:SILVER','xyz:NVDA','xyz:AAPL','xyz:TSLA','xyz:XYZ100'];
+let hlList=HL_FALLBACK.slice();
+// Twelve Data: mercados convencionales (metales, acciones, ETF, forex) con años de historial
+const TD_BASE='https://api.twelvedata.com';
+const TD_DEFAULT='XAU/USD';
+const TD_SYMBOLS=['XAU/USD','XAG/USD','XPT/USD','XPD/USD','EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','USD/CAD','EUR/GBP',
+  'SPY','QQQ','DIA','IWM','GLD','SLV','GDX','USO','TLT',
+  'AAPL','MSFT','NVDA','TSLA','AMZN','GOOGL','META','AMD','NFLX','AVGO','JPM','COIN','MSTR','PLTR','BRK.B','V','KO','XOM'];
+const TD_IV={'1m':'1min','5m':'5min','15m':'15min','30m':'30min','1h':'1h','2h':'2h','4h':'4h','8h':'8h','1d':'1day','1w':'1week','1M':'1month'};
+// Lo que Twelve Data no ofrece se construye agrupando: 12h con velas de 4h; 3M y 12M con velas mensuales
+const TD_AGG_BASE={'12h':'4h','3M':'1month','12M':'1month'};
+const TD_TAIL={'12h':9,'3M':9,'12M':24};
+const TD_PER_MIN=8,TD_PER_DAY=800,TD_MAX=5000;
+const TD_KEY_LS='cryptoGrid.tdKey',TD_USE_LS='cryptoGrid.tdUsage',TD_REF_LS='cryptoGrid.tdRefresh';
+const TD_ALIAS={GOLD:'XAU/USD',ORO:'XAU/USD',XAU:'XAU/USD',SILVER:'XAG/USD',PLATA:'XAG/USD',XAG:'XAG/USD',PLATINUM:'XPT/USD',PLATINO:'XPT/USD',PALLADIUM:'XPD/USD',PALADIO:'XPD/USD'};
+const TD_CCY=new Set(['USD','EUR','GBP','JPY','CHF','AUD','CAD','NZD','XAU','XAG','XPT','XPD','CNY','CNH','MXN','SEK','NOK','DKK','PLN','TRY','ZAR','HKD','SGD','BTC','ETH']);
+const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+const tdKey=()=>(lsGet(TD_KEY_LS)||'').trim();
+const tdRefreshMin=()=>{const v=lsGet(TD_REF_LS);return v==null?10:+v;};
+const utcDay=()=>new Date().toISOString().slice(0,10);
+function tdUsage(){
+  try{const u=JSON.parse(lsGet(TD_USE_LS));if(u&&u.d===utcDay()) return u.n|0;}catch(e){}
+  return 0;
+}
+function tdCount(){lsSet(TD_USE_LS,JSON.stringify({d:utcDay(),n:tdUsage()+1}));tdStatus();}
+function normalizeTD(raw){
+  let s=String(raw||'').trim().toUpperCase().replace(/\s+/g,'');
+  if(!s) return null;
+  if(TD_ALIAS[s]) return TD_ALIAS[s];
+  s=s.replace(/[^A-Z0-9/.:\-]/g,'');
+  if(!s.includes('/')&&/^[A-Z]{6}$/.test(s)&&TD_CCY.has(s.slice(0,3))&&TD_CCY.has(s.slice(3))) s=s.slice(0,3)+'/'+s.slice(3);
+  return s||null;
+}
+// Cola de peticiones: como máximo 8 por minuto (límite del plan gratuito)
+const tdQ={queue:[],stamps:[],timer:0,cache:new Map()};
+function tdRequest(params,low){
+  const ck=JSON.stringify(params);
+  const hit=tdQ.cache.get(ck);
+  // Cargas recientes (5 min) y bloques de historial antiguo se reutilizan sin gastar créditos
+  if(hit&&(params.end_date||Date.now()-hit.at<300000)) return Promise.resolve(hit.j);
+  if(!tdKey()) return Promise.reject(Object.assign(new Error('Falta tu clave de Twelve Data: abre el menú ⋯ y pulsa "Twelve Data"'),{fatal:true}));
+  if(low&&tdQ.queue.length) return Promise.reject(new Error('cola ocupada'));
+  return new Promise((res,rej)=>{tdQ.queue.push({params,ck,res,rej});tdPump();});
+}
+function tdPump(){
+  clearTimeout(tdQ.timer);
+  const now=Date.now();
+  tdQ.stamps=tdQ.stamps.filter(t=>now-t<61000);
+  while(tdQ.queue.length&&tdQ.stamps.length<TD_PER_MIN){
+    tdQ.stamps.push(now);
+    tdRun(tdQ.queue.shift());
+  }
+  if(tdQ.queue.length) tdQ.timer=setTimeout(tdPump,Math.max(300,61000-(now-tdQ.stamps[0])));
+  tdStatus();
+}
+async function tdRun(job){
+  const key=tdKey();
+  if(!key) return job.rej(Object.assign(new Error('Falta tu clave de Twelve Data: abre el menú ⋯ y pulsa "Twelve Data"'),{fatal:true}));
+  const q=new URLSearchParams(Object.assign({},job.params,{apikey:key}));
+  let j;
+  try{
+    const r=await fetch(TD_BASE+'/time_series?'+q.toString());
+    j=await r.json();
+  }catch(e){return job.rej(new Error('Sin conexión con Twelve Data'));}
+  if(j&&j.status==='error'){
+    const c=+j.code,m=String(j.message||'');
+    if(c===429){
+      if(/day|daily/i.test(m)){tdQ.dayOut=true;tdStatus();return job.rej(Object.assign(new Error('Has gastado los 800 créditos de hoy de Twelve Data. Se renuevan a medianoche UTC.'),{fatal:true}));}
+      // Límite por minuto: espera y reintenta
+      tdQ.stamps=Array(TD_PER_MIN).fill(Date.now());
+      tdQ.queue.unshift(job);
+      return tdPump();
+    }
+    tdCount();
+    if(c===401) return job.rej(Object.assign(new Error('La clave de Twelve Data no es válida'),{fatal:true}));
+    if(c===403) return job.rej(Object.assign(new Error('Tu plan de Twelve Data no incluye '+job.params.symbol+' (el gratuito cubre EE. UU., forex y metales)'),{fatal:true}));
+    if(job.params.end_date&&/no data|not available|dates/i.test(m)) return job.res({values:[]});
+    if(c===400||c===404) return job.rej(Object.assign(new Error('Twelve Data no reconoce '+job.params.symbol+' (ejemplos: XAU/USD, AAPL, SPY)'),{fatal:true,notFound:true}));
+    return job.rej(new Error('Twelve Data: '+(m||'error '+c)));
+  }
+  tdCount();
+  tdQ.dayOut=false;
+  tdQ.cache.set(job.ck,{at:Date.now(),j});
+  job.res(j);
+}
+const pad0=n=>String(n).padStart(2,'0');
+function tdFmt(ms){const d=new Date(ms);return d.getUTCFullYear()+'-'+pad0(d.getUTCMonth()+1)+'-'+pad0(d.getUTCDate())+' '+pad0(d.getUTCHours())+':'+pad0(d.getUTCMinutes())+':'+pad0(d.getUTCSeconds());}
+function tdTime(s){
+  s=String(s||'').trim();
+  const iso=s.length<=10?s+'T00:00:00Z':s.replace(' ','T')+'Z';
+  return Math.floor(Date.parse(iso)/1000);
+}
+function aggTD(rows,iv){
+  if(iv==='12h'){
+    const out=[];let cur=null;
+    for(const b of rows){
+      const gs=Math.floor(b.time/43200)*43200;
+      if(cur&&cur.time===gs){cur.high=Math.max(cur.high,b.high);cur.low=Math.min(cur.low,b.low);cur.close=b.close;}
+      else{cur={time:gs,open:b.open,high:b.high,low:b.low,close:b.close};out.push(cur);}
+    }
+    return out;
+  }
+  return aggregate(rows,iv);
+}
+function tdStatus(){
+  const n=tdQ.queue.length,used=tdUsage();
+  const st=document.getElementById('tdStat');
+  if(st) st.textContent='Hoy: '+used+' de '+TD_PER_DAY+' créditos (cuenta de este navegador)'+(n?' · '+n+' peticiones esperando turno':'');
+  const s2=document.getElementById('tdSt');
+  if(s2){
+    const warn=(!tdKey()&&live().some(p=>p.cfg.market==='td'))||!!tdQ.dayOut;
+    s2.textContent=!tdKey()?'Sin clave':(n?n+' en cola':used+' / '+TD_PER_DAY);
+    s2.style.color=warn?'#ff8a80':'';
+  }
+}
 const WSS={
   spot:['wss://stream.binance.com:9443/ws','wss://data-stream.binance.vision/ws'],
   futures:['wss://fstream.binance.com/market/ws']
@@ -569,7 +730,11 @@ const COIN_COLORS={BTC:'#f7931a',ETH:'#627eea',SOL:'#9945ff',BNB:'#f3ba2f',XRP:'
 const COIN_PAL=['#5b8def','#26a69a','#ab47bc','#ff9800','#ef5350','#8d6e63','#00acc1'];
 function setCoin(el,sym){
   if(!el) return;
-  const base=String(sym||'').replace(/^1000/,'').replace(/(USDT|USDC|FDUSD|BUSD|BTC|ETH|BNB|EUR|TRY)$/,'')||'?';
+  let s0=String(sym||'');
+  const ext=s0.includes(':')||s0.includes('/');
+  if(s0.includes(':')) s0=s0.slice(s0.indexOf(':')+1);
+  if(s0.includes('/')) s0=s0.split('/')[0];
+  const base=(ext?s0:s0.replace(/^1000/,'').replace(/(USDT|USDC|FDUSD|BUSD|BTC|ETH|BNB|EUR|TRY)$/,''))||'?';
   el.textContent=base[0];
   el.style.background=COIN_COLORS[base]||COIN_PAL[[...base].reduce((a,c)=>a+c.charCodeAt(0),0)%COIN_PAL.length];
 }
@@ -599,16 +764,78 @@ function normalizeSymbol(raw){
   if(!/(USDT|USDC|FDUSD|BUSD|BTC|ETH|BNB|EUR|TRY)$/.test(s)||s.length<=4&&!/USDT$/.test(s)) s+='USDT';
   return s;
 }
+function normalizeHL(raw){
+  let s=String(raw||'').trim().replace(/\s+/g,'');
+  if(!s) return null;
+  let dex=null,coin=s;
+  const i=s.indexOf(':');
+  if(i>=0){dex=s.slice(0,i).toLowerCase();coin=s.slice(i+1);}
+  coin=coin.replace(/[^A-Za-z0-9]/g,'');
+  if(!coin) return null;
+  const C=coin.toUpperCase();
+  // Si existe en la lista, usa el nombre exacto (prefiere el dex escrito, si no xyz)
+  const hits=hlList.filter(n=>n.slice(n.indexOf(':')+1).toUpperCase()===C);
+  const pick=(dex&&hits.find(n=>n.startsWith(dex+':')))||(!dex&&(hits.find(n=>n.startsWith('xyz:'))||hits[0]));
+  if(pick) return pick;
+  return (dex||'xyz')+':'+C;
+}
+const mktLabel=m=>m==='futures'?'Futuros':m==='hl'?'Hyperliquid':m==='td'?'Twelve Data':'Spot';
 function setActive(p){
   activePanel=p;
   live().forEach(x=>x.root.classList.toggle('active',x===p));
   if(typeof calcSchedule==='function') calcSchedule();
   if(typeof mSync==='function') mSync();
+  if(typeof mMaSync==='function') mMaSync();
 }
 
 /* ---------- Datos de Binance ---------- */
+async function fetchKlinesHL(coin,interval,opts){
+  const agg=!!AGG[interval],iv=agg?'1M':interval;
+  const ivMs=(agg?INTERVALS['1M']:INTERVALS[interval])*1000;
+  const end=opts.endTime||Date.now();
+  const start=end-(opts.limit||1000)*ivMs;
+  let r;
+  try{
+    r=await fetch(HL_INFO,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'candleSnapshot',req:{coin,interval:iv,startTime:Math.max(0,Math.floor(start)),endTime:Math.floor(end)}})});
+  }catch(e){throw new Error('Sin conexión con Hyperliquid');}
+  if(!r.ok) throw Object.assign(new Error('Hyperliquid no reconoce '+coin+' (ejemplo válido: xyz:NVDA)'),{fatal:true,notFound:true});
+  const j=await r.json();
+  if(!Array.isArray(j)) throw Object.assign(new Error('Hyperliquid no reconoce '+coin),{fatal:true,notFound:true});
+  const rows=j.map(k=>({time:Math.floor(k.t/1000),open:+k.o,high:+k.h,low:+k.l,close:+k.c}))
+    .filter(b=>isFinite(b.open)&&isFinite(b.close)).sort((a,b)=>a.time-b.time);
+  // Si la primera vela empieza bastante después del inicio pedido, ya no hay más historial
+  const partial=!rows.length||rows[0].time*1000-start>2*ivMs;
+  const out=agg?aggregate(rows,interval):rows;
+  out.partial=partial;
+  return out;
+}
+async function fetchKlinesTD(symbol,interval,opts){
+  const aggBase=TD_AGG_BASE[interval],base=aggBase||TD_IV[interval];
+  if(!base) throw Object.assign(new Error('Twelve Data no tiene esta temporalidad'),{fatal:true});
+  const size=Math.min(TD_MAX,opts.limit||TD_MAX);
+  const p={symbol,interval:base,outputsize:String(size),timezone:'UTC'};
+  if(opts.endTime) p.end_date=tdFmt(opts.endTime);
+  const j=await tdRequest(p,opts.low);
+  const seen=new Set();
+  const rows=(Array.isArray(j.values)?j.values:[])
+    .map(v=>({time:tdTime(v.datetime),open:+v.open,high:+v.high,low:+v.low,close:+v.close}))
+    .filter(b=>isFinite(b.time)&&isFinite(b.open)&&isFinite(b.close)&&!seen.has(b.time)&&seen.add(b.time))
+    .sort((a,b)=>a.time-b.time);
+  const partial=rows.length<size;
+  let out=rows;
+  if(aggBase){
+    out=aggTD(rows,interval);
+    // El primer grupo puede estar incompleto si hay más historial antes: se descarta
+    if(!partial&&out.length>1) out=out.slice(1);
+  }
+  out.partial=partial;
+  return out;
+}
 async function fetchKlines(symbol,interval,opts){
   opts=opts||{};
+  if(opts.market==='hl') return fetchKlinesHL(symbol,interval,opts);
+  if(opts.market==='td') return fetchKlinesTD(symbol,interval,opts);
   const fut=opts.market==='futures';
   const bases=fut?[REST_F]:REST;
   const path=fut?'/fapi/v1/klines':'/api/v3/klines';
@@ -648,6 +875,26 @@ async function loadSymbols(){
       }catch(e){}
     }
   };
+  fill('#symlistH',hlList);
+  fill('#symlistT',TD_SYMBOLS);
+  (async()=>{
+    try{
+      const post=async body=>{const r=await fetch(HL_INFO,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok) throw 0;return r.json();};
+      const dexes=(await post({type:'perpDexs'})).filter(d=>d&&d.name).map(d=>d.name);
+      dexes.sort((a,b)=>(a==='xyz'?-1:b==='xyz'?1:a.localeCompare(b)));
+      const all=[];
+      for(const dx of dexes){
+        try{
+          const m=await post({type:'meta',dex:dx});
+          for(const u of (m&&m.universe)||[]){
+            if(!u||!u.name||u.isDelisted) continue;
+            all.push(u.name.includes(':')?u.name:dx+':'+u.name);
+          }
+        }catch(e){}
+      }
+      if(all.length){hlList=all;fill('#symlistH',all);}
+    }catch(e){}
+  })();
   grab(REST.map(b=>b+'/api/v3/ticker/24hr'),'#symlist');
   grab([REST_F+'/fapi/v1/ticker/24hr'],'#symlistF');
 }
@@ -657,7 +904,7 @@ class Panel{
   constructor(idx){
     this.idx=idx;
     this.cfg=state.panels[idx];
-    if(this.cfg.market!=='futures') this.cfg.market='spot';
+    if(!/^(futures|hl|td)$/.test(this.cfg.market)) this.cfg.market='spot';
     this.data=[];
     this.reqId=0;
     this.ws=null;
@@ -732,6 +979,7 @@ class Panel{
     });
 
     this.chart.priceScale('right').applyOptions({invertScale:!!this.cfg.inv});
+    this.initEma();
 
     this.chart.timeScale().subscribeVisibleLogicalRangeChange(r=>{
       this.render();
@@ -764,8 +1012,8 @@ class Panel{
     this.fsEl.addEventListener('click',()=>toggleSolo(this));
     this.mktEl=$('.mkt',root);
     this.mktEl.addEventListener('click',()=>{
-      this.cfg.market=this.cfg.market==='futures'?'spot':'futures';
-      save();this.syncHeader();this.load();
+      const order=['spot','futures','hl','td'];
+      this.setMarket(order[(order.indexOf(this.cfg.market)+1)%order.length]);
     });
     this.invEl=$('.inv',root);
     this.invEl.addEventListener('click',()=>{
@@ -805,7 +1053,7 @@ class Panel{
     this.load();
   }
 
-  get key(){return this.cfg.symbol+(this.cfg.market==='futures'?':F':'');}
+  get key(){const mk=this.cfg.market;return this.cfg.symbol+(mk==='futures'?':F':mk==='hl'?'@HL':mk==='td'?'@TD':'');}
 
   destroy(){
     this.reqId++;
@@ -820,19 +1068,33 @@ class Panel{
     this.symEl.value=this.cfg.symbol;
     setCoin(this.lgCoin,this.cfg.symbol);
     this.lgSym.textContent=this.cfg.symbol;
-    this.lgMeta.textContent=this.cfg.interval+' · '+(this.cfg.market==='futures'?'Futuros':'Spot');
+    this.lgMeta.textContent=this.cfg.interval+' · '+mktLabel(this.cfg.market);
     if(typeof mSync==='function') mSync();
-    const fut=this.cfg.market==='futures';
-    this.symEl.setAttribute('list',fut?'symlistF':'symlist');
-    this.mktEl.textContent=fut?'Fut':'Spot';
+    const mk=this.cfg.market,fut=mk==='futures',hl=mk==='hl',td=mk==='td';
+    this.symEl.setAttribute('list',td?'symlistT':hl?'symlistH':fut?'symlistF':'symlist');
+    this.mktEl.textContent=td?'TD':hl?'HL':fut?'Fut':'Spot';
     this.selEl.value=this.cfg.interval;
     this.mktEl.classList.toggle('fut',fut);
     this.root.querySelectorAll('.ivs button').forEach(b=>b.classList.toggle('on',b.dataset.iv===this.cfg.interval));
   }
   setMsg(t,err){this.msgEl.textContent=t||'';this.msgEl.className='msg'+(err?' err':'');}
 
+  // Cambia de mercado recordando el último par de cada familia (Binance, Hyperliquid, Twelve Data)
+  setMarket(mk){
+    const c=this.cfg,cur=c.market;
+    if(mk===cur) return;
+    const bn=x=>x==='spot'||x==='futures';
+    const slot=x=>x==='hl'?'hlSymbol':x==='td'?'tdSymbol':'bnSymbol';
+    if(!(bn(cur)&&bn(mk))){
+      c[slot(cur)]=c.symbol;
+      c.symbol=c[slot(mk)]||(mk==='hl'?HL_DEFAULT:mk==='td'?TD_DEFAULT:'BTCUSDT');
+    }
+    c.market=mk;
+    save();this.syncHeader();this.load();
+  }
   setSymbol(raw){
-    const s=normalizeSymbol(raw);
+    const mk=this.cfg.market;
+    const s=mk==='hl'?normalizeHL(raw):mk==='td'?normalizeTD(raw):normalizeSymbol(raw);
     if(!s){this.symEl.value=this.cfg.symbol;return;}
     this.symEl.value=s;
     if(s===this.cfg.symbol&&this.data.length) return;
@@ -850,10 +1112,12 @@ class Panel{
     this.data=[];this.noMore=false;this.loadingMore=false;
     this.open24=null;clearInterval(this.t24);if(this.lgPrice) this.lgPrice.textContent='';
     this.series.setData([]);
+    this.emaSetAll();
     this.lastEl.textContent='';
     if(typeof calcSchedule==='function') calcSchedule();
     this.hoverId=null;this.pending=null;this.preview=null;this.drag=null;
-    this.setMsg('Cargando '+this.cfg.symbol+(this.cfg.market==='futures'?' (futuros)':'')+'…');
+    const mk=this.cfg.market;
+    this.setMsg('Cargando '+this.cfg.symbol+(mk==='futures'?' (futuros)':mk==='hl'?' (Hyperliquid)':mk==='td'?' (Twelve Data'+(tdQ.queue.length>=TD_PER_MIN?', esperando turno: máx. 8 por minuto':'')+')':'')+'…');
     this.dirty=true;
     try{
       const market=this.cfg.market;
@@ -863,7 +1127,7 @@ class Panel{
       }catch(e){
         const sym=this.cfg.symbol;
         const alt=market==='futures'?'1000'+sym:sym.replace(/^1000/,'');
-        if(e.notFound&&alt!==sym){
+        if(e.notFound&&alt!==sym&&market!=='hl'&&market!=='td'){
           try{
             kl=await fetchKlines(alt,this.cfg.interval,{market});
             this.cfg.symbol=alt;save();this.syncHeader();
@@ -873,11 +1137,12 @@ class Panel{
       if(id!==this.reqId) return;
       if(!kl.length) throw new Error('Sin datos para este par');
       this.data=kl;
-      this.noMore=kl.length<1000;
+      this.noMore=kl.partial!=null?kl.partial:kl.length<1000;
       const p=kl[kl.length-1].close;
       this.dec=Math.max(2,Math.min(10,4-Math.floor(Math.log10(p))));
       this.series.applyOptions({priceFormat:{type:'price',precision:this.dec,minMove:Math.pow(10,-this.dec)}});
       this.series.setData(kl);
+      this.emaSetAll();
       const n=kl.length;
       this.chart.timeScale().setVisibleLogicalRange({from:Math.max(0,n-120),to:n+6});
       this.setMsg('');
@@ -892,6 +1157,7 @@ class Panel{
     }
   }
   async fetch24(id){
+    if(this.cfg.market==='hl'||this.cfg.market==='td') return;
     const fut=this.cfg.market==='futures';
     const urls=fut?[REST_F+'/fapi/v1/ticker/24hr?symbol='+this.cfg.symbol]:REST.map(b=>b+'/api/v3/ticker/24hr?symbol='+this.cfg.symbol);
     for(const u of urls){
@@ -910,21 +1176,25 @@ class Panel{
     this.loadingMore=true;
     const id=this.reqId;
     try{
-      const kl=await fetchKlines(this.cfg.symbol,this.cfg.interval,{market:this.cfg.market,endTime:this.data[0].time*1000-1});
+      let kl=await fetchKlines(this.cfg.symbol,this.cfg.interval,{market:this.cfg.market,endTime:this.data[0].time*1000-1});
       if(id!==this.reqId) return;
+      const first=this.data[0].time;
+      kl=Object.assign(kl.filter(b=>b.time<first),{partial:kl.partial});
       if(!kl.length){this.noMore=true;return;}
       const range=this.chart.timeScale().getVisibleLogicalRange();
       this.data=kl.concat(this.data);
       this.series.setData(this.data);
+      this.emaSetAll();
       if(range) this.chart.timeScale().setVisibleLogicalRange({from:range.from+kl.length,to:range.to+kl.length});
-      if(kl.length<1000) this.noMore=true;
+      if(kl.partial!=null?kl.partial:kl.length<1000) this.noMore=true;
       this.dirty=true;
     }catch(e){}
     finally{this.loadingMore=false;}
   }
   async refreshTail(id){
     try{
-      const kl=await fetchKlines(this.cfg.symbol,this.cfg.interval,{market:this.cfg.market,limit:200});
+      const td=this.cfg.market==='td';
+      const kl=await fetchKlines(this.cfg.symbol,this.cfg.interval,{market:this.cfg.market,limit:td?(TD_TAIL[this.cfg.interval]||3):200,low:td});
       if(id!==this.reqId) return;
       kl.forEach(b=>this.applyBar(b));
     }catch(e){}
@@ -932,6 +1202,8 @@ class Panel{
 
   /* --- tiempo real --- */
   openWS(id){
+    if(this.cfg.market==='hl') return this.openWSHL(id);
+    if(this.cfg.market==='td') return this.openPollTD(id);
     const stream=`${this.cfg.symbol.toLowerCase()}@kline_${AGG[this.cfg.interval]?'1M':this.cfg.interval}`;
     const connect=bi=>{
       if(id!==this.reqId) return;
@@ -962,7 +1234,61 @@ class Panel{
     };
     connect(0);
   }
+  openWSHL(id){
+    const coin=this.cfg.symbol,iv=AGG[this.cfg.interval]?'1M':this.cfg.interval;
+    const connect=()=>{
+      if(id!==this.reqId) return;
+      let ws;
+      try{ws=new WebSocket(HL_WS);}catch(e){return;}
+      this.ws=ws;
+      ws.onopen=()=>{
+        ws.send(JSON.stringify({method:'subscribe',subscription:{type:'candle',coin,interval:iv}}));
+        clearInterval(this.hlPing);
+        this.hlPing=setInterval(()=>{try{ws.send(JSON.stringify({method:'ping'}));}catch(e){}},30000);
+      };
+      ws.onmessage=ev=>{
+        if(id!==this.reqId) return;
+        try{
+          const m=JSON.parse(ev.data);
+          if(m.channel!=='candle'||!m.data) return;
+          const k=m.data;
+          if(k.s!==coin||k.i!==iv) return;
+          let bar={time:Math.floor(k.t/1000),open:+k.o,high:+k.h,low:+k.l,close:+k.c};
+          if(AGG[this.cfg.interval]) bar=this.mergeAgg(bar);
+          this.applyBar(bar);
+        }catch(e){}
+      };
+      ws.onerror=()=>{try{ws.close();}catch(e){}};
+      ws.onclose=()=>{
+        clearInterval(this.hlPing);
+        if(this.ws!==ws||id!==this.reqId) return;
+        setTimeout(()=>{
+          if(this.ws!==ws||id!==this.reqId) return;
+          this.refreshTail(id);
+          connect();
+        },3000);
+      };
+    };
+    connect();
+  }
+  // Twelve Data gratis no tiene tiempo real: se piden las últimas velas cada pocos minutos
+  openPollTD(id){
+    clearInterval(this.tdPoll);
+    this.tdLast=Date.now();
+    const min=tdRefreshMin();
+    if(!min) return;
+    this.tdPoll=setInterval(()=>this.pollTD(id),30000);
+  }
+  pollTD(id,force){
+    const min=tdRefreshMin();
+    if(id!==this.reqId||!min||document.hidden) return;
+    if(!force&&Date.now()-this.tdLast<min*60000) return;
+    this.tdLast=Date.now();
+    this.refreshTail(id);
+  }
   closeWS(){
+    clearInterval(this.tdPoll);
+    clearInterval(this.hlPing);
     if(this.ws){
       const w=this.ws;this.ws=null;
       w.onclose=null;w.onmessage=null;w.onerror=null;
@@ -981,8 +1307,99 @@ class Panel{
     else if(!last||bar.time>last.time) d.push(bar);
     else return;
     this.series.update(bar);
+    this.emaUpdate(bar);
     this.updateLast();
     this.dirty=true;
+  }
+  /* --- EMAs (hasta 4 por gráfica; la configuración se guarda en cfg.emas) --- */
+  initEma(){
+    const a=Array.isArray(this.cfg.emas)?this.cfg.emas:[];
+    this.cfg.emas=EMA_DEFAULTS.map((d,i)=>{
+      const o=a[i]&&typeof a[i]==='object'?a[i]:{};
+      const len=Math.round(+o.len);
+      return{on:!!o.on,t:/^(ema|sma|hma)$/.test(o.t||'')?o.t:'ema',len:len>=1&&len<=EMA_MAX?len:d.len,color:/^#[0-9a-f]{6}$/i.test(o.color||'')?o.color:d.color,w:[1,2,3,4].includes(+o.w)?+o.w:d.w};
+    });
+    this.emaS=[null,null,null,null];
+    this.emaV=[[],[],[],[]];
+    this.emaSync();
+  }
+  emaSync(){ if(typeof mMaSync==='function') mMaSync(); }
+  emaCalc(e){
+    const c=this.data.map(b=>b.close),len=e.len;
+    if(e.t==='sma'){
+      const out=new Array(c.length).fill(null);let sum=0;
+      for(let i=0;i<c.length;i++){
+        sum+=c[i];
+        if(i>=len) sum-=c[i-len];
+        if(i>=len-1) out[i]=sum/len;
+      }
+      return out;
+    }
+    if(e.t==='hma'){
+      const half=Math.max(1,Math.floor(len/2)),sq=Math.max(1,Math.round(Math.sqrt(len)));
+      const w1=wmaSeries(c,half),w2=wmaSeries(c,len);
+      const raw=c.map((_,i)=>w2[i]==null||w1[i]==null?null:2*w1[i]-w2[i]);
+      return wmaSeries(raw,sq);
+    }
+    const out=new Array(c.length).fill(null),k=2/(len+1);
+    let sum=0,prev=null;
+    for(let i=0;i<c.length;i++){
+      if(i<len-1){sum+=c[i];}
+      else if(i===len-1){sum+=c[i];prev=sum/len;out[i]=prev;}
+      else{prev=prev+k*(c[i]-prev);out[i]=prev;}
+    }
+    return out;
+  }
+  // Valor de la media en la última vela, sin recalcular todo el historial
+  emaLastVal(e,idx){
+    const d=this.data,len=e.len,cl=j=>d[j].close;
+    if(e.t==='sma'){
+      if(idx<len-1) return null;
+      let s=0;for(let j=idx-len+1;j<=idx;j++) s+=cl(j);
+      return s/len;
+    }
+    if(e.t==='hma'){
+      const half=Math.max(1,Math.floor(len/2)),sq=Math.max(1,Math.round(Math.sqrt(len)));
+      if(idx<len+sq-2) return null;
+      const raw=j=>2*wmaAt(cl,j,half)-wmaAt(cl,j,len);
+      return wmaAt(raw,idx,sq);
+    }
+    const v=this.emaV[e._i];
+    if(idx<len-1) return null;
+    if(idx===len-1){let s=0;for(let j=0;j<=idx;j++) s+=cl(j);return s/len;}
+    return v[idx-1]!=null?v[idx-1]+(2/(len+1))*(cl(idx)-v[idx-1]):null;
+  }
+  emaSetAll(){
+    for(let i=0;i<4;i++){
+      const e=this.cfg.emas[i];
+      if(!e.on){
+        if(this.emaS[i]){try{this.chart.removeSeries(this.emaS[i]);}catch(_){}this.emaS[i]=null;}
+        this.emaV[i]=[];
+        continue;
+      }
+      if(!this.emaS[i]){
+        this.emaS[i]=this.chart.addLineSeries({
+          color:e.color,lineWidth:e.w,priceLineVisible:false,lastValueVisible:false,
+          crosshairMarkerVisible:false,title:''
+        });
+      }else this.emaS[i].applyOptions({color:e.color,lineWidth:e.w});
+      const vals=this.emaCalc(e);
+      this.emaV[i]=vals;
+      const pts=[];
+      for(let j=0;j<vals.length;j++) if(vals[j]!=null) pts.push({time:this.data[j].time,value:vals[j]});
+      this.emaS[i].setData(pts);
+    }
+    this.emaSync();
+  }
+  emaUpdate(bar){
+    const idx=this.data.length-1;
+    for(let i=0;i<4;i++){
+      const e=this.cfg.emas[i],s=this.emaS[i];
+      if(!e.on||!s) continue;
+      const val=this.emaLastVal({t:e.t,len:e.len,_i:i},idx);
+      this.emaV[i][idx]=val;
+      if(val!=null) s.update({time:bar.time,value:val});
+    }
   }
   updateLast(){
     const l=this.data[this.data.length-1];
@@ -1801,7 +2218,7 @@ function calcRefresh(){
     syncCalcFollow();
   }
   cE('cpPair').textContent=p.cfg.symbol;
-  cE('cpMkt').textContent=p.cfg.market==='futures'?'Futuros':'Spot';
+  cE('cpMkt').textContent=mktLabel(p.cfg.market);
   const d=p.data,price=d&&d.length?d[d.length-1].close:null;
   const live=cE('cpLive');
   if(price==null){
@@ -2028,7 +2445,7 @@ function downloadText(name,text,type){
 function drawingsCSV(){
   const rows=[['linea_id','moneda','mercado','tf','tipo','color','grosor','inicio','fin','precio_ini','precio_fin','n_puntos','puntos'].join(';')];
   for(const key of Object.keys(state.drawings).sort()){
-    const fut=key.endsWith(':F'),sym=fut?key.slice(0,-2):key;
+    const td=key.endsWith('@TD'),hl=!td&&key.endsWith('@HL'),fut=!hl&&!td&&key.endsWith(':F'),sym=(hl||td)?key.slice(0,-3):fut?key.slice(0,-2):key;
     for(const d of state.drawings[key]||[]){
       let pts;
       if(d.type==='brush') pts=(d.pts||[]).slice().sort((a,b)=>a.t-b.t);
@@ -2044,7 +2461,7 @@ function drawingsCSV(){
       pts=pts.filter(q=>q&&q.t!=null&&isFinite(q.p));
       if(!pts.length) continue;
       const a=pts[0],b=pts[pts.length-1];
-      rows.push([d.id,sym,fut?'futures':'spot',d.tf||'',d.type,d.color||'',d.w||'',
+      rows.push([d.id,sym,td?'twelvedata':hl?'hyperliquid':fut?'futures':'spot',d.tf||'',d.type,d.color||'',d.w||'',
         isoUTC(a.t),isoUTC(b.t),fmtP(a.p),fmtP(b.p),pts.length,
         pts.map(q=>isoUTC(q.t)+'@'+fmtP(q.p)).join('|')].join(';'));
     }
@@ -2170,7 +2587,7 @@ function openSheet(id){
 }
 function closeSheets(){
   document.querySelectorAll('.sheet').forEach(x=>x.classList.remove('on'));
-  sheetBg.classList.remove('on');
+  sheetBg.classList.remove('on','light');
   const a=document.activeElement;if(a&&a.blur) a.blur();
 }
 sheetBg.addEventListener('click',closeSheets);
@@ -2203,20 +2620,22 @@ tfGrid.addEventListener('click',e=>{
 });
 mE('mktSeg').addEventListener('click',e=>{
   const b=e.target.closest('button[data-m]');const p=curPanel();if(!b||!p) return;
-  if(p.cfg.market!==b.dataset.m) p.mktEl.click();
+  if(p.cfg.market!==b.dataset.m) p.setMarket(b.dataset.m);
   syncSymSheet();
 });
 const symSearch=mE('symSearch'),symList=mE('symList');
+const symKey=x=>String(x).toUpperCase().replace(/[^A-Z0-9]/g,'');
 function symOptions(){
-  const p=curPanel(),fut=p&&p.cfg.market==='futures';
-  return Array.from(document.querySelectorAll((fut?'#symlistF':'#symlist')+' option')).map(o=>o.value);
+  const p=curPanel(),mk=p?p.cfg.market:'spot';
+  const id=mk==='td'?'#symlistT':mk==='hl'?'#symlistH':mk==='futures'?'#symlistF':'#symlist';
+  return Array.from(document.querySelectorAll(id+' option')).map(o=>o.value);
 }
 function renderSymList(){
-  const p=curPanel(),q=symSearch.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const p=curPanel(),mk=p?p.cfg.market:'spot',q=symKey(symSearch.value);
   let list=symOptions();
-  if(q) list=list.filter(x=>x.includes(q)).sort((a,b)=>(b.startsWith(q)?1:0)-(a.startsWith(q)?1:0));
+  if(q) list=list.filter(x=>symKey(x).includes(q)).sort((a,b)=>(symKey(b).startsWith(q)?1:0)-(symKey(a).startsWith(q)?1:0));
   list=list.slice(0,80);
-  if(q&&!list.length){const n=normalizeSymbol(q);if(n) list=[n];}
+  if(q&&!list.length){const n=mk==='hl'?normalizeHL(symSearch.value):mk==='td'?normalizeTD(symSearch.value):normalizeSymbol(q);if(n) list=[n];}
   symList.innerHTML='';
   for(const sym of list){
     const b=document.createElement('button');b.type='button';b.dataset.sym=sym;
@@ -2277,6 +2696,7 @@ mE('shMore').querySelector('.sh-list').addEventListener('click',e=>{
   const p=curPanel(),a=b.dataset.act;
   if(a==='calc'){closeSheets();if(!state.calc.open) openCalc(false);}
   else if(a==='fib'){closeSheets();setTimeout(()=>showFibPanel(true),60);}
+  else if(a==='td'){openTdSheet();}
   else if(a==='inv'){if(p) p.invEl.click();syncMore();}
   else if(a==='exp'){closeSheets();exportDrawings();}
   else if(a==='imp'){closeSheets();mE('impFile').click();}
@@ -2293,7 +2713,8 @@ function mSync(){
     setCoin(pill.querySelector('.coin'),p.cfg.symbol);
     pill.querySelector('.nm').textContent=p.cfg.symbol;
     pill.querySelector('.tf').textContent=p.cfg.interval;
-    pill.querySelector('.mk').hidden=p.cfg.market!=='futures';
+    const mkEl=pill.querySelector('.mk'),mm=p.cfg.market;
+    mkEl.hidden=mm==='spot';mkEl.textContent=mm==='hl'?'HL':mm==='td'?'TD':'FUT';
   }
   const lk=mE('mLock');
   lk.innerHTML=state.lockDrawings
@@ -2320,6 +2741,114 @@ function mToolSync(){
   chip.hidden=false;
 }
 
+/* ---------- Medias móviles (EMA / SMA / HMA) de la gráfica activa ---------- */
+const EMA_MAX=1000;
+
+// Media móvil ponderada (pesos 1..n) en O(n). Los null iniciales se saltan.
+function wmaSeries(a,n){
+  const out=new Array(a.length).fill(null);
+  let s0=0;while(s0<a.length&&a[s0]==null) s0++;
+  const den=n*(n+1)/2;
+  let S=0,W=0;
+  for(let i=s0;i<a.length;i++){
+    const k=i-s0;
+    if(k<n-1){S+=a[i];W+=a[i]*(k+1);}
+    else if(k===n-1){S+=a[i];W+=a[i]*n;out[i]=W/den;}
+    else{W=W-S+n*a[i];S=S+a[i]-a[i-n];out[i]=W/den;}
+  }
+  return out;
+}
+// WMA en un solo punto: f(j) da el valor j-ésimo
+function wmaAt(f,i,n){
+  let s=0;
+  for(let k=0;k<n;k++) s+=f(i-n+1+k)*(k+1);
+  return s/(n*(n+1)/2);
+}
+const MA_TYPES=[['ema','EMA'],['sma','SMA'],['hma','HMA']];
+const EMA_DEFAULTS=[
+  {on:false,t:'ema',len:9,color:'#f5c518',w:1},
+  {on:false,t:'ema',len:21,color:'#4da3ff',w:1},
+  {on:false,t:'ema',len:50,color:'#d36bff',w:2},
+  {on:false,t:'ema',len:200,color:'#ff5252',w:2}
+];
+
+function mMaSync(){
+  const b=mE('mMA');if(!b) return;
+  const p=curPanel();
+  b.classList.toggle('on',!!(p&&p.cfg.emas&&p.cfg.emas.some(e=>e.on)));
+}
+const maRows=mE('maRows');
+let maTarget=null;
+function maBuildRows(){
+  maRows.innerHTML='';
+  const p=maTarget;if(!p) return;
+  mE('maSub').textContent=p.cfg.symbol+' · '+p.cfg.interval;
+  p.cfg.emas.forEach((e,i)=>{
+    const row=document.createElement('div');
+    row.className='ma-row'+(e.on?'':' off');
+    row.innerHTML='<input type="checkbox" class="ma-sw" aria-label="Activar media '+(i+1)+'">'+
+      '<select class="ma-t" aria-label="Tipo de media">'+MA_TYPES.map(t=>'<option value="'+t[0]+'">'+t[1]+'</option>').join('')+'</select>'+
+      '<input type="number" class="ma-len" min="1" max="'+EMA_MAX+'" step="1" inputmode="numeric" aria-label="Periodo">'+
+      '<input type="color" aria-label="Color">'+
+      '<select class="ma-w" aria-label="Grosor"><option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option><option value="4">4 px</option></select>';
+    const [chk,typ,len,col,w]=row.children;
+    chk.checked=e.on;typ.value=e.t;len.value=e.len;col.value=e.color;w.value=String(e.w);
+    const upd=patch=>{Object.assign(e,patch);row.classList.toggle('off',!e.on);save();p.emaSetAll();};
+    chk.addEventListener('change',()=>upd({on:chk.checked}));
+    typ.addEventListener('change',()=>upd({t:typ.value}));
+    len.addEventListener('input',()=>{
+      const v=Math.round(+len.value);
+      const ok=len.value!==''&&v>=1&&v<=EMA_MAX;
+      len.classList.toggle('bad',!ok);
+      if(ok) upd({len:v});
+    });
+    len.addEventListener('blur',()=>{len.value=e.len;len.classList.remove('bad');});
+    col.addEventListener('input',()=>upd({color:col.value}));
+    w.addEventListener('change',()=>upd({w:+w.value}));
+    maRows.appendChild(row);
+  });
+}
+mE('mMA').addEventListener('click',()=>{
+  const p=curPanel();if(!p) return;
+  maTarget=p;maBuildRows();
+  openSheet('shMA');sheetBg.classList.add('light');
+});
+mE('maReset').addEventListener('click',()=>{
+  const p=maTarget;if(!p) return;
+  p.cfg.emas=EMA_DEFAULTS.map(d=>Object.assign({},d));
+  save();p.emaSetAll();maBuildRows();
+});
+
+/* ---------- Twelve Data: clave y opciones (hoja inferior) ---------- */
+function openTdSheet(){
+  mE('tdKey').value=tdKey();
+  mE('tdRef').value=String(tdRefreshMin());
+  mE('tdErr').textContent='';
+  tdStatus();
+  openSheet('shTD');
+}
+function saveTd(){
+  const k=mE('tdKey').value.trim();
+  if(!k){mE('tdErr').textContent='Pega tu clave primero.';return;}
+  const changed=k!==tdKey();
+  lsSet(TD_KEY_LS,k);
+  lsSet(TD_REF_LS,mE('tdRef').value);
+  if(changed) tdQ.cache.clear();
+  closeSheets();
+  // Recarga las gráficas de Twelve Data sin datos; al resto les aplica el nuevo ritmo de actualización
+  live().filter(p=>p.cfg.market==='td').forEach(p=>{
+    if(changed||!p.data.length) p.load();
+    else p.openPollTD(p.reqId);
+  });
+  tdStatus();
+  cpToast('Twelve Data guardado');
+}
+mE('tdSave').addEventListener('click',saveTd);
+mE('tdKey').addEventListener('keydown',e=>{if(e.key==='Enter') saveTd();});
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden) live().forEach(p=>{if(p.cfg.market==='td'&&p.data.length) p.pollTD(p.reqId);});
+});
+
 /* ---------- Arranque ---------- */
 function loop(){
   for(const p of panels) if(p) p.tick();
@@ -2333,6 +2862,7 @@ setActive(panels[0]||null);
 cE('cpRisk').value=state.calc.risk||'';
 if(state.calc.open) openCalc(false);
 loadSymbols();
+tdStatus();
 requestAnimationFrame(loop);
 })();
 </script>
