@@ -2,12 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TradingFree">
-<meta name="theme-color" content="#131418">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crypto Grid</title>
 <style>
 :root{
@@ -77,6 +72,13 @@ label.chk{display:flex;align-items:center;gap:5px;color:var(--muted);cursor:poin
 #fibPanel,#chPanel{position:fixed;width:350px;background:var(--panel);border:1px solid #3b4c66;border-radius:8px;padding:12px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px}
 #fibPanel .fp-title,#chPanel .fp-title{font-weight:600}
 #chPanel{width:300px}
+#rectPanel{position:fixed;width:300px;background:var(--panel);border:1px solid #3b4c66;border-radius:8px;padding:12px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px}
+#rectPanel .fp-title{font-weight:600}
+.rp-lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+.rp-lbl b{color:var(--text);font:600 12px var(--mono)}
+.rp-sws{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+#rpColor{width:26px;height:22px;padding:0;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer}
+#rpOp{width:100%;accent-color:#5b8def}
 #fibInput{background:#0f1319;border:1px solid var(--line);color:var(--text);border-radius:5px;padding:6px 8px;font:13px var(--mono);width:100%}
 #fibInput:focus{outline:none;border-color:#4a6283}
 .fp-ext{display:flex;gap:14px;align-items:center;color:var(--muted)}
@@ -90,6 +92,18 @@ label.chk{display:flex;align-items:center;gap:5px;color:var(--muted);cursor:poin
 .mkt{background:none;border:1px solid var(--line);color:var(--muted);border-radius:5px;padding:2px 8px;cursor:pointer}
 .mkt:hover{color:var(--text);border-color:#3b4c66}
 .mkt.fut{background:#3a2f12;color:#f5c518;border-color:#6b5517}
+.mkt.hl{background:#10302c;color:#50e3c2;border-color:#1f6b5f}
+.sym.hlw{width:108px;text-transform:none}
+.sym.tdw{width:100px}
+.mkt.td{background:#2a1838;color:#d36bff;border-color:#5a2f73}
+#tdBtn.warn{color:#ff8a80;border-color:#7a3b3b}
+#tdPanel{position:fixed;width:330px;background:var(--panel);border:1px solid #3b4c66;border-radius:8px;padding:12px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px}
+#tdPanel .fp-title{font-weight:600}
+#tdPanel input,#tdPanel select{background:#0f1319;border:1px solid var(--line);color:var(--text);border-radius:5px;padding:6px 8px;font:13px var(--mono)}
+#tdPanel input{width:100%}
+#tdPanel input:focus{outline:none;border-color:#4a6283}
+#tdPanel a{color:#d36bff}
+.td-stat{font:12px var(--mono);color:var(--text)}
 .inv{background:none;border:1px solid var(--line);color:var(--muted);border-radius:5px;padding:2px 8px;cursor:pointer}
 .inv:hover{color:var(--text);border-color:#3b4c66}
 .inv.on{background:var(--sel);color:#fff;border-color:#3b4c66}
@@ -123,7 +137,7 @@ button{touch-action:manipulation}
 .clr svg,.inv svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .last{white-space:nowrap}
 .ivsel{display:none;background:#0f1319;color:var(--text);border:1px solid var(--line);border-radius:5px;padding:3px 4px;font:inherit}
-@container (max-width:640px){
+@container (max-width:720px){
   .ivs{display:none}
   .ivsel{display:block}
 }
@@ -193,100 +207,26 @@ html.dragging-panel,html.dragging-panel *{cursor:grabbing !important;-webkit-use
 #topbar{box-shadow:inset 0 -3px 0 var(--page,transparent)}
 .brand .pg{background:var(--page,#4da3ff);color:#0c0f14;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-left:8px;vertical-align:1px}
 
-/* =================== VERSIÓN MÓVIL (estilo TradingView) =================== */
-:root{--bg:#2b2e37;--panel:#1e2029;--line:#3a3e4a;--text:#e6e8ee;--muted:#9598a1;--sel:#3d4250;
-  --sb:env(safe-area-inset-bottom,0px);--bb:max(6px,calc(env(safe-area-inset-bottom,0px) - 20px));--st:env(safe-area-inset-top,0px);--blue:#2962ff;--pill:rgba(46,48,56,.94)}
-html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#131418}
-#app{height:100%;height:100dvh;padding-top:var(--st);padding-bottom:calc(66px + var(--bb))}
-#topbar,#tools{display:none !important}
-.phead{display:none !important}
-#main{min-height:0}
-#grid{gap:2px;background:#131418;border-radius:0 0 18px 18px;overflow:hidden}
-.panel.active{box-shadow:none}
-#grid:not(.g1) .panel.active{box-shadow:inset 0 0 0 1px #5b8def}
-@media (orientation:portrait){.g2{grid-template-columns:minmax(0,1fr) !important;grid-template-rows:repeat(2,minmax(0,1fr)) !important}}
-.msg{top:64px}
-.legend{position:absolute;left:10px;top:8px;z-index:12;pointer-events:none;display:flex;flex-direction:column;gap:3px;text-shadow:0 0 6px #2b2e37,0 0 6px #2b2e37}
-.lg1{display:flex;align-items:center;gap:7px;font-size:17px;color:var(--text);white-space:nowrap}
-.lgm{color:var(--muted);font-size:13px}
-.lg2{font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
-.lg2.up{color:#26a69a}.lg2.down{color:#ef5350}
-.coin{flex-shrink:0;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 12px system-ui,sans-serif;text-shadow:none}
-#grid:not(.g1) .legend{transform:scale(.78);transform-origin:0 0}
-
-/* barra inferior */
-#mbar{position:fixed;left:10px;right:10px;bottom:var(--bb);display:flex;gap:10px;z-index:40}
-.mpill{display:flex;align-items:center;height:58px;border-radius:29px;background:var(--pill);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.09);color:#fff}
-#mPair{flex:1;min-width:0;gap:8px;padding:0 12px 0 6px;font:600 17px system-ui,-apple-system,sans-serif;text-align:left;cursor:pointer}
-#mPair .coin{width:42px;height:42px;font-size:19px}
-#mPair .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#mPair .tf{font-weight:500;color:#d1d4dc;margin-left:2px}
-#mPair .mk{font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:#3a2f12;color:#f5c518;flex-shrink:0}
-#mActs{padding:0 4px;flex-shrink:0}
-#mActs button,#mUndo{background:none;border:0;color:#e6e8ee;display:grid;place-items:center;cursor:pointer;padding:0}
-#mActs button{width:40px;height:52px;border-radius:26px}
-#mActs button.on{color:#5b8def}
-#mActs svg,#mUndo svg,#mTool svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-#mUndo{position:fixed;left:12px;bottom:calc(100px + var(--bb));width:54px;height:54px;border-radius:50%;background:var(--pill);border:1px solid rgba(255,255,255,.09);z-index:40;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
-#mUndo svg{width:24px;height:24px}
-#mTool{position:fixed;top:calc(var(--st) + 8px);left:50%;transform:translateX(-50%);z-index:45;display:flex;align-items:center;gap:8px;padding:5px 5px 5px 14px;border-radius:999px;background:var(--blue);color:#fff;font-size:14px;max-width:calc(100% - 20px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
-#mTool span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#mTool button{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.2);color:#fff;display:grid;place-items:center;padding:0}
-#mTool button svg{width:16px;height:16px;stroke-width:2.2}
-
-/* paneles que suben desde abajo */
-#sheetBg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:70;opacity:0;pointer-events:none;transition:opacity .2s}
-#sheetBg.on{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:71;background:var(--panel);border-radius:18px 18px 0 0;padding:6px 16px calc(18px + var(--sb));max-height:86dvh;overflow:auto;-webkit-overflow-scrolling:touch;transform:translateY(105%);transition:transform .25s ease;visibility:hidden}
-.sheet.on{transform:none;visibility:visible}
-.sh-grab{width:42px;height:5px;border-radius:3px;background:#4a4e5a;margin:4px auto 12px}
-.sh-sec{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px}
-.sh-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.sh-grid button,.sh-seg button{background:#2a2d37;border:0;border-radius:10px;color:var(--text);padding:11px 4px;font-size:15px;cursor:pointer}
-.sh-grid button.on,.sh-seg button.on{background:var(--blue);color:#fff}
-.sh-grid.tools button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 2px;font-size:12px}
-.sh-grid.tools svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.sh-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.sh-input{width:100%;background:#2a2d37;border:1px solid transparent;color:var(--text);border-radius:10px;padding:12px 14px;font-size:16px;text-transform:uppercase}
-.sh-input:focus{outline:none;border-color:var(--blue)}
-.sym-list{display:flex;flex-direction:column}
-.sym-list button{display:flex;align-items:center;gap:12px;background:none;border:0;border-bottom:1px solid #2a2d37;color:var(--text);padding:11px 2px;font:600 16px system-ui,sans-serif;text-align:left;cursor:pointer}
-.sym-list button.on{color:#5b8def}
-.sym-list .coin{width:30px;height:30px;font-size:14px}
-.sh-list{display:flex;flex-direction:column;margin-top:4px}
-.sh-list button,.sh-tog{display:flex;align-items:center;justify-content:space-between;gap:12px;background:none;border:0;border-bottom:1px solid #2a2d37;color:var(--text);padding:14px 2px;font-size:16px;text-align:left;cursor:pointer;width:100%}
-.sh-list button.on .st{color:#5b8def}
-.sh-list .st{color:var(--muted);font-size:14px}
-.sh-list button.danger{color:#ef5350}
-.sh-tog input{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:14px;background:#3a3e4a;position:relative;transition:background .2s;flex-shrink:0;margin:0;cursor:pointer}
-.sh-tog input::after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}
-.sh-tog input:checked{background:var(--blue)}
-.sh-tog input:checked::after{transform:translateX(18px)}
-#swatches{display:flex;gap:12px;flex-wrap:wrap}
-#swatches .sw{width:36px;height:36px;border-width:3px}
-#swatches .sw.on{border-color:#5b8def;box-shadow:0 0 0 2px #fff inset}
-#fibPanel{left:12px !important;right:12px !important;top:calc(var(--st) + 60px) !important;width:auto !important;z-index:80}
-#fibPanel .fp-ext{display:none}
-#calcPanel{z-index:75}
-#cpToast{bottom:calc(130px + var(--bb))}
-
-/* Medias móviles (hoja inferior) */
-#sheetBg.on.light{background:rgba(0,0,0,.14)}
-.ma-sub{color:var(--muted);font-size:13px;margin:-2px 0 12px}
-.ma-row{display:grid;grid-template-columns:46px 74px minmax(0,1fr) 40px 66px;gap:8px;align-items:center;margin-bottom:10px}
-.ma-row.off>:not(.ma-sw){opacity:.45}
-.ma-sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:14px;background:#3a3e4a;position:relative;transition:background .2s;margin:0;cursor:pointer}
-.ma-sw::after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}
-.ma-sw:checked{background:var(--blue)}
-.ma-sw:checked::after{transform:translateX(18px)}
-.ma-row select,.ma-row .ma-len{height:40px;width:100%;background:#2a2d37;border:1px solid transparent;color:var(--text);border-radius:10px;padding:0 6px;font-size:16px;font-family:inherit}
-.ma-row .ma-len{text-align:center;font-weight:600;font-family:var(--mono)}
-.ma-row .ma-len:focus{outline:none;border-color:var(--blue)}
-.ma-row .ma-len.bad{border-color:#ef5350}
-.sh-input.raw{text-transform:none}
-#shTD a{color:#5b8def}
-#shTD select.sh-input{appearance:none;-webkit-appearance:none}
-.ma-row input[type=color]{width:40px;height:40px;padding:3px;border:0;border-radius:10px;background:#2a2d37;cursor:pointer}
+/* EMAs por gráfica */
+.emab{background:none;border:1px solid var(--line);color:var(--muted);border-radius:5px;padding:3px 7px;cursor:pointer;font-weight:600;white-space:nowrap;position:relative}
+.emab:hover,.emab.on{color:var(--text);border-color:#3b4c66}
+.emab.has{color:#fff;background:var(--sel);border-color:#3b4c66}
+.emab .n{font:700 10px var(--mono);margin-left:4px;color:var(--up)}
+@container (max-width:340px){.emab{padding:2px 4px;font-size:11px}}
+@media (pointer:coarse){.emab{padding:7px 9px}}
+#emaPanel{position:fixed;width:330px;background:var(--panel);border:1px solid #3b4c66;border-radius:8px;padding:12px;z-index:55;box-shadow:0 10px 30px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px}
+#emaPanel .fp-title{font-weight:600}
+#emaPanel .sub{color:var(--muted);font:12px var(--mono);margin-top:-4px}
+.ema-row{display:grid;grid-template-columns:12px 18px 58px 1fr 32px 56px;gap:8px;align-items:center}
+.ema-row .nm{color:var(--muted);font:600 12px var(--mono);text-align:center}
+.ema-row input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:#5b8def;cursor:pointer}
+.ema-row .ema-len{width:100%;background:#0f1319;border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 7px;font:600 13px var(--mono)}
+.ema-row .ema-len:focus{outline:none;border-color:#4a6283}
+.ema-row .ema-len.bad{border-color:#ef5350}
+.ema-row input[type=color]{width:30px;height:26px;padding:0;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer}
+.ema-row select{background:#0f1319;color:var(--text);border:1px solid var(--line);border-radius:5px;padding:4px 3px;font:inherit}
+.ema-row.off .nm,.ema-row.off .ema-len,.ema-row.off input[type=color],.ema-row.off select{opacity:.5}
+@media (pointer:coarse){.ema-row .ema-len,.ema-row select{font-size:16px}}
 </style>
 </head>
 <body>
@@ -306,6 +246,8 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
       <button class="tbtn" id="calcBtn" title="Calculadora de riesgo"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M8 18h2M12 18h2"/></svg></button>
       <button class="tbtn" id="fibBtn" title="Editar los niveles de Fibonacci">Niveles Fib</button>
       <button class="tbtn" id="chBtn" title="Opciones de los canales paralelos">Canal</button>
+      <button class="tbtn" id="rectBtn" title="Relleno, opacidad y extensión de los rectángulos">Rectángulo</button>
+      <button class="tbtn" id="tdBtn" title="Clave y estado de Twelve Data (oro, plata, acciones y forex con años de historial)">Twelve Data</button>
       <button class="tbtn" id="expBtn" title="Descarga todos los dibujos: un CSV con fecha y precio de cada punto (para CANALES) y una copia de seguridad JSON">Exportar</button>
       <button class="tbtn" id="impBtn" title="Carga una copia de seguridad JSON exportada antes (no borra lo que ya tienes)">Importar</button>
       <input type="file" id="impFile" accept=".json,application/json" hidden>
@@ -318,92 +260,30 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
       <button data-tool="trend" title="Línea de tendencia (T)"><svg viewBox="0 0 24 24"><path d="M3 20L21 5"/><circle cx="7" cy="16.7" r="2"/><circle cx="14.5" cy="10.4" r="2"/></svg></button>
       <button data-tool="chan" title="Canal paralelo (C)"><svg viewBox="0 0 24 24"><path d="M3 14L17 3M7 21L21 10"/><path d="M5 17.5L19 6.5" stroke-dasharray="1.5 2.6"/></svg></button>
       <button data-tool="fib" title="Fibonacci (F)"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 10h18M3 15h18M3 20h18"/><path d="M6 19L18 6" stroke-dasharray="2 2.5"/></svg></button>
+      <button data-tool="rect" title="Rectángulo (R)"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" style="fill:currentColor;fill-opacity:.18"/><circle cx="4" cy="6" r="1.9" style="fill:#12161d"/><circle cx="20" cy="18" r="1.9" style="fill:#12161d"/></svg></button>
       <button data-tool="brush" title="Pincel (B)"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></svg></button>
       <button data-tool="eraser" title="Goma de borrar (E)"><svg viewBox="0 0 24 24"><path d="M8 20h11"/><path d="M5 15l9-9 5 5-6 6H9z"/></svg></button>
-      <button id="hideBtn" title="Ocultar dibujos" style="margin-top:auto"></button>
+      <button id="lockBtn" title="Bloquear dibujos (L)" style="margin-top:auto"></button>
+      <button id="hideBtn" title="Ocultar dibujos"></button>
     </aside>
     <section id="grid"></section>
   </div>
-</div>
-
-<div id="mTool" hidden><span id="mToolTxt"></span><button type="button" id="mToolX" title="Cancelar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-<button id="mUndo" type="button" title="Deshacer"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
-<div id="mbar">
-  <button class="mpill" id="mPair" type="button"><span class="coin"></span><span class="nm"></span><span class="tf"></span><span class="mk" hidden>FUT</span></button>
-  <div class="mpill" id="mActs">
-    <button type="button" id="mDraw" title="Herramientas de dibujo"><svg viewBox="0 0 24 24"><path d="M4 20l1.2-4.6L16.5 4.1a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z"/><path d="M14.5 6l3.5 3.5"/><path d="M3 21.5h8"/></svg></button>
-    <button type="button" id="mLock" title="Bloquear dibujos"></button>
-    <button type="button" id="mEye" title="Ocultar dibujos"></button>
-    <button type="button" id="mMA" title="Medias móviles de esta gráfica (EMA, SMA o HMA)"><svg viewBox="0 0 24 24"><path d="M3 17c3.5-9 6.5-9 9-4s5.5 4 9-7"/><path d="M3 12c3-5 6-5 9-1s6 3 9-3" stroke-dasharray="1.5 2.6"/></svg></button>
-    <button type="button" id="mMore" title="Más opciones"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></button>
-  </div>
-</div>
-<div id="sheetBg"></div>
-<div class="sheet" id="shSym">
-  <div class="sh-grab"></div>
-  <input id="symSearch" class="sh-input" placeholder="Buscar par: BTC, SOL, PEPE…" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
-  <div class="sh-sec">Temporalidad</div>
-  <div class="sh-grid" id="tfGrid"></div>
-  <div class="sh-seg" id="mktSeg"><button type="button" data-m="spot">Spot</button><button type="button" data-m="futures">Futuros</button><button type="button" data-m="hl">Hyperliquid</button><button type="button" data-m="td">Twelve Data</button></div>
-  <div class="sh-sec">Pares</div>
-  <div class="sym-list" id="symList"></div>
-</div>
-<div class="sheet" id="shTools">
-  <div class="sh-grab"></div>
-  <div class="sh-grid tools" id="toolGrid"></div>
-  <div class="sh-sec">Color</div>
-  <div id="swSlot"></div>
-  <div class="sh-sec">Grosor</div>
-  <div class="sh-grid" id="wGrid"></div>
-  <div class="sh-list"><label class="sh-tog"><span>Imán (pega a máximos y mínimos)</span><span id="magSlot"></span></label></div>
-</div>
-<div class="sheet" id="shMore">
-  <div class="sh-grab"></div>
-  <div class="sh-sec" style="margin-top:4px">Gráficas en pantalla</div>
-  <div class="sh-grid" id="layGrid" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-n="1">1</button><button type="button" data-n="2">2</button><button type="button" data-n="4">4</button></div>
-  <div class="sh-list">
-    <button type="button" data-act="calc"><span>Calculadora de riesgo</span></button>
-    <button type="button" data-act="fib"><span>Niveles de Fibonacci</span><span class="st" id="fibSt"></span></button>
-    <button type="button" data-act="td"><span>Twelve Data (clave)</span><span class="st" id="tdSt"></span></button>
-    <button type="button" data-act="inv"><span>Invertir eje de precios</span><span class="st" id="invSt"></span></button>
-    <button type="button" data-act="exp"><span>Exportar dibujos</span></button>
-    <button type="button" data-act="imp"><span>Importar dibujos</span></button>
-    <button type="button" data-act="clear" class="danger"><span>Borrar dibujos de este par</span></button>
-  </div>
-  <div class="sh-sec">Extender Fibonacci</div>
-  <div class="sh-list">
-    <label class="sh-tog"><span>Hacia la izquierda</span><span id="slFibL"></span></label>
-    <label class="sh-tog"><span>Hacia la derecha</span><span id="slFibR"></span></label>
-  </div>
-  <div class="sh-sec">Extender canal paralelo</div>
-  <div class="sh-list">
-    <label class="sh-tog"><span>Hacia la izquierda</span><span id="slChL"></span></label>
-    <label class="sh-tog"><span>Hacia la derecha</span><span id="slChR"></span></label>
-  </div>
-</div>
-<div class="sheet" id="shMA">
-  <div class="sh-grab"></div>
-  <div class="sh-sec" style="margin-top:4px">Medias móviles</div>
-  <div class="ma-sub" id="maSub"></div>
-  <div id="maRows"></div>
-  <div class="sh-list"><button type="button" id="maReset"><span>Restablecer</span></button></div>
-</div>
-<div class="sheet" id="shTD">
-  <div class="sh-grab"></div>
-  <div class="sh-sec" style="margin-top:4px">Twelve Data</div>
-  <div class="ma-sub">Datos reales de oro, plata, acciones, ETF y forex con años de historial. Necesitas una clave gratuita: regístrate en <a href="https://twelvedata.com/" target="_blank" rel="noopener">twelvedata.com</a> y cópiala de tu panel (API Keys).</div>
-  <input id="tdKey" class="sh-input raw" type="text" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Pega aquí tu clave">
-  <div class="sh-sec">Actualizar velas cada</div>
-  <select id="tdRef" class="sh-input raw"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option><option value="0">Nunca</option></select>
-  <div class="ma-sub" id="tdStat" style="margin-top:14px"></div>
-  <div class="ma-sub">Plan gratuito: 8 peticiones por minuto y 800 al día. Cada gráfica gasta 1 al cargar (hasta 5000 velas), 1 cada vez que llegas al principio y quieres más historial, y 1 en cada actualización. Solo se actualiza con la app visible.</div>
-  <div class="fp-err" id="tdErr"></div>
-  <div class="sh-seg" style="grid-template-columns:1fr"><button type="button" id="tdSave" class="on">Guardar</button></div>
 </div>
 <datalist id="symlist"></datalist>
 <datalist id="symlistF"></datalist>
 <datalist id="symlistH"></datalist>
 <datalist id="symlistT"></datalist>
+<div id="tdPanel" hidden>
+  <div class="fp-title">Twelve Data</div>
+  <div class="fp-help">Datos reales de oro, plata, acciones, ETF y forex con años de historial. Necesitas una clave gratuita: regístrate en <a href="https://twelvedata.com/" target="_blank" rel="noopener">twelvedata.com</a> y cópiala de tu panel (API Keys).</div>
+  <input type="text" id="tdKey" spellcheck="false" autocomplete="off" placeholder="Pega aquí tu clave">
+  <div class="fp-ext"><span>Actualizar velas cada</span>
+    <select id="tdRef"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option><option value="0">Nunca</option></select>
+  </div>
+  <div class="td-stat" id="tdStat"></div>
+  <div class="fp-help">Plan gratuito: 8 peticiones por minuto y 800 al día. Cada gráfica gasta 1 al cargar (hasta 5000 velas), 1 cada vez que llegas al principio y quieres más historial, y 1 en cada actualización. Solo se actualiza con la pestaña visible. Fuera del horario de mercado las acciones no se mueven.</div>
+  <div class="fp-row"><span class="fp-err" id="tdErr"></span><button class="primary" id="tdSave">Guardar</button></div>
+</div>
 <div id="calcPanel" hidden>
   <div class="cp-head" id="cpHead"><span>Calculadora de riesgo</span><button type="button" id="cpClose" title="Cerrar">×</button></div>
   <div class="cp-body">
@@ -434,9 +314,10 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 </div>
 <div id="cpToast"></div>
 <div id="fibPanel" hidden>
-  <div class="fp-title">Niveles de Fibonacci</div>
+  <div class="fp-title" id="fpTitle">Niveles de Fibonacci</div>
   <input type="text" id="fibInput" spellcheck="false" autocomplete="off">
-  <div class="fp-help">Separa los valores con espacios. Puedes usar negativos y mayores que 1 (extensiones). Se aplica a todos los Fibonacci.</div>
+  <div class="fp-help">Separa los valores con espacios. Puedes usar negativos y mayores que 1 (extensiones).</div>
+  <div class="fp-help" id="fpHelp"></div>
   <div class="fp-ext">
     <span>Extender líneas:</span>
     <label class="chk"><input type="checkbox" id="fibExtL"> Izquierda</label>
@@ -459,6 +340,27 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
   </div>
   <div class="fp-help">Se aplica a todos los canales. Niveles: -0.25, 0, 0.5, 1 y 1.25.</div>
 </div>
+<div id="rectPanel" hidden>
+  <div class="fp-title" id="rpTitle">Rectángulo</div>
+  <div class="rp-lbl"><span>Color de relleno</span></div>
+  <div class="rp-sws" id="rpSws"><input type="color" id="rpColor" title="Otro color"></div>
+  <div class="rp-lbl"><span>Opacidad del relleno</span><b id="rpOpV">20 %</b></div>
+  <input type="range" id="rpOp" min="0" max="100" step="5">
+  <div class="fp-ext">
+    <span>Extender:</span>
+    <label class="chk"><input type="checkbox" id="rpExtL"> Izquierda</label>
+    <label class="chk"><input type="checkbox" id="rpExtR"> Derecha</label>
+  </div>
+  <div class="fp-help">El borde usa el color y el grosor de la barra de arriba. Los cambios se aplican al rectángulo seleccionado (haz clic en uno) y a los que dibujes después. Supr borra el seleccionado.</div>
+</div>
+
+<div id="emaPanel" hidden>
+  <div class="fp-title">Medias móviles</div>
+  <div class="sub" id="emaSub"></div>
+  <div id="emaRows"></div>
+  <div class="fp-help">Activa hasta 4 medias en esta gráfica. En cada una elige el tipo (EMA, SMA o HMA), el periodo, el color y el grosor. Los cambios se ven al momento y se guardan solos.</div>
+  <div class="fp-row"><button type="button" id="emaReset">Restablecer</button></div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <script>
@@ -470,7 +372,7 @@ if(typeof LightweightCharts==='undefined'){
 }
 
 /* ---------- Configuración ---------- */
-const INTERVALS={'1m':60,'5m':300,'15m':900,'30m':1800, '1h':3600, '2h':7200, '4h':14400,'1d':86400,'1w':604800,'1M':2592000,'3M':7776000,'12M':31536000};
+const INTERVALS={'1m':60,'5m':300,'15m':900,'30m':1800, '1h':3600, '2h':7200, '4h':14400,'8h':28800,'12h':43200,'1d':86400,'1w':604800,'1M':2592000,'3M':7776000,'12M':31536000};
 // Binance no ofrece 3 ni 12 meses: se construyen agrupando velas mensuales (trimestres y años naturales, UTC)
 const AGG={'3M':3,'12M':12};
 function groupStart(t,iv){
@@ -534,7 +436,7 @@ function tdRequest(params,low){
   const hit=tdQ.cache.get(ck);
   // Cargas recientes (5 min) y bloques de historial antiguo se reutilizan sin gastar créditos
   if(hit&&(params.end_date||Date.now()-hit.at<300000)) return Promise.resolve(hit.j);
-  if(!tdKey()) return Promise.reject(Object.assign(new Error('Falta tu clave de Twelve Data: abre el menú ⋯ y pulsa "Twelve Data"'),{fatal:true}));
+  if(!tdKey()) return Promise.reject(Object.assign(new Error('Falta tu clave de Twelve Data: pulsa el botón "Twelve Data" de arriba'),{fatal:true}));
   if(low&&tdQ.queue.length) return Promise.reject(new Error('cola ocupada'));
   return new Promise((res,rej)=>{tdQ.queue.push({params,ck,res,rej});tdPump();});
 }
@@ -551,7 +453,7 @@ function tdPump(){
 }
 async function tdRun(job){
   const key=tdKey();
-  if(!key) return job.rej(Object.assign(new Error('Falta tu clave de Twelve Data: abre el menú ⋯ y pulsa "Twelve Data"'),{fatal:true}));
+  if(!key) return job.rej(Object.assign(new Error('Falta tu clave de Twelve Data: pulsa el botón "Twelve Data" de arriba'),{fatal:true}));
   const q=new URLSearchParams(Object.assign({},job.params,{apikey:key}));
   let j;
   try{
@@ -599,15 +501,13 @@ function aggTD(rows,iv){
   return aggregate(rows,iv);
 }
 function tdStatus(){
+  const b=document.getElementById('tdBtn');
+  if(!b) return;
   const n=tdQ.queue.length,used=tdUsage();
+  b.textContent='Twelve Data'+(n?' · '+n+' en cola':'');
+  b.classList.toggle('warn',!tdKey()&&live().some(p=>p.cfg.market==='td')||!!tdQ.dayOut);
   const st=document.getElementById('tdStat');
   if(st) st.textContent='Hoy: '+used+' de '+TD_PER_DAY+' créditos (cuenta de este navegador)'+(n?' · '+n+' peticiones esperando turno':'');
-  const s2=document.getElementById('tdSt');
-  if(s2){
-    const warn=(!tdKey()&&live().some(p=>p.cfg.market==='td'))||!!tdQ.dayOut;
-    s2.textContent=!tdKey()?'Sin clave':(n?n+' en cola':used+' / '+TD_PER_DAY);
-    s2.style.color=warn?'#ff8a80':'';
-  }
 }
 const WSS={
   spot:['wss://stream.binance.com:9443/ws','wss://data-stream.binance.vision/ws'],
@@ -620,9 +520,10 @@ const FALLBACK_SYMBOLS=['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','DOGEU
 const HINTS={
   cursor:'Arrastra para mover la gráfica. Arrastra un dibujo para moverlo.',
   h:'Haz clic donde quieras la línea. Con el imán se pega a máximos y mínimos (Ctrl lo invierte).',
-  fib:'Haz clic en el punto inicial y luego en el final (o arrastra).',
+  fib:'Haz clic en el punto inicial y luego en el final (o arrastra). Usa los niveles de "Niveles Fib" para los nuevos.',
   trend:'Haz clic en dos puntos (o arrastra). La línea se alarga hacia la derecha.',
   chan:'Clic 1 y 2: línea base. Clic 3: ancho del canal.',
+  rect:'Haz clic en una esquina y luego en la opuesta (o arrastra). Con el imán se pega a máximos y mínimos (Ctrl lo invierte).',
   brush:'Mantén pulsado y dibuja. Esc para volver al cursor.',
   eraser:'Haz clic sobre un dibujo para borrarlo.'
 };
@@ -685,6 +586,34 @@ function loadState(){
 }
 const state=loadState();
 if(!state.calc||typeof state.calc!=='object') state.calc={open:false,x:null,y:null,risk:''};
+if(!state.rect||typeof state.rect!=='object') state.rect={};
+state.rect=Object.assign({fill:'#4da3ff',fo:0.2,extL:false,extR:false},state.rect);
+// Dibujo seleccionado (rectángulo o Fibonacci que creaste o tocaste el último): {key,id}
+let selD=null;
+function selObj(type){
+  if(!selD) return null;
+  const d=(state.drawings[selD.key]||[]).find(x=>x.id===selD.id)||null;
+  return d&&(!type||d.type===type)?d:null;
+}
+const selRectObj=()=>selObj('rect');
+const selFibObj=()=>selObj('fib');
+// Cada Fibonacci guarda sus propios niveles y extensiones. Los antiguos (que usaban
+// los niveles comunes) se quedan con los niveles que tenías configurados hasta ahora.
+function fixFib(d){
+  if(!d||d.type!=='fib') return;
+  if(!Array.isArray(d.levels)||d.levels.length<2) d.levels=state.fibLevels.slice();
+  if(d.extL==null) d.extL=!!state.fibExtL;
+  if(d.extR==null) d.extR=!!state.fibExt;
+}
+for(const k of Object.keys(state.drawings)) (state.drawings[k]||[]).forEach(fixFib);
+const fibStyle=()=>({levels:state.fibLevels.slice(),extL:!!state.fibExtL,extR:!!state.fibExt});
+function selectDrawing(v){
+  selD=v;
+  if(typeof syncRectPanel==='function') syncRectPanel();
+  if(typeof syncFibPanel==='function') syncFibPanel();
+  live().forEach(p=>p.dirty=true);
+}
+const rectStyle=()=>({fill:state.rect.fill,fo:state.rect.fo,extL:!!state.rect.extL,extR:!!state.rect.extR});
 let saveTimer=null;
 function save(){
   clearTimeout(saveTimer);
@@ -702,17 +631,11 @@ let soloPanel=null;
 let activePanel=null;
 
 function invalidateAll(){live().forEach(p=>p.dirty=true);save();}
+function redrawAll(){live().forEach(p=>p.dirty=true);}
 function addDrawing(sym,d){
   d.id=Math.random().toString(36).slice(2,9);
   drawingsOf(sym).push(d);
   invalidateAll();
-}
-const CROSS_TOOLS=new Set(['h','trend','chan','fib']);
-const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-function fmtCrossTime(t,iv){
-  const d=new Date(t*1000),dd=d.getDate()+' '+MESES[d.getMonth()];
-  if(/^(1d|1w|1M|3M|12M)$/.test(iv)) return dd+' '+String(d.getFullYear()).slice(2);
-  return dd+', '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
 const CHAN_LEVELS=[-0.25,0,0.5,1,1.25];
 // Alarga el segmento a-b (en píxeles) hasta el borde izquierdo y/o derecho del área de la gráfica
@@ -725,18 +648,6 @@ function extLine(a,b,L,R,w){
   if(L&&p.x>-2) p={x:-2,y:p.y+m*(-2-p.x)};
   if(R&&q.x<w+2) q={x:w+2,y:q.y+m*(w+2-q.x)};
   return[p,q];
-}
-const COIN_COLORS={BTC:'#f7931a',ETH:'#627eea',SOL:'#9945ff',BNB:'#f3ba2f',XRP:'#23292f',DOGE:'#c2a633',ADA:'#0033ad',AVAX:'#e84142',LINK:'#2a5ada',DOT:'#e6007a',LTC:'#345d9d',TRX:'#ff060a',NEAR:'#00c08b',SUI:'#4da2ff',PEPE:'#3d8b3d',TON:'#0098ea',UNI:'#ff007a'};
-const COIN_PAL=['#5b8def','#26a69a','#ab47bc','#ff9800','#ef5350','#8d6e63','#00acc1'];
-function setCoin(el,sym){
-  if(!el) return;
-  let s0=String(sym||'');
-  const ext=s0.includes(':')||s0.includes('/');
-  if(s0.includes(':')) s0=s0.slice(s0.indexOf(':')+1);
-  if(s0.includes('/')) s0=s0.split('/')[0];
-  const base=(ext?s0:s0.replace(/^1000/,'').replace(/(USDT|USDC|FDUSD|BUSD|BTC|ETH|BNB|EUR|TRY)$/,''))||'?';
-  el.textContent=base[0];
-  el.style.background=COIN_COLORS[base]||COIN_PAL[[...base].reduce((a,c)=>a+c.charCodeAt(0),0)%COIN_PAL.length];
 }
 function segDist(px,py,x1,y1,x2,y2){
   const dx=x2-x1,dy=y2-y1,l2=dx*dx+dy*dy;
@@ -784,8 +695,6 @@ function setActive(p){
   activePanel=p;
   live().forEach(x=>x.root.classList.toggle('active',x===p));
   if(typeof calcSchedule==='function') calcSchedule();
-  if(typeof mSync==='function') mSync();
-  if(typeof mMaSync==='function') mMaSync();
 }
 
 /* ---------- Datos de Binance ---------- */
@@ -930,13 +839,13 @@ class Panel{
         '<div class="ivs">'+Object.keys(INTERVALS).map(i=>`<button data-iv="${i}">${i}</button>`).join('')+'</div>'+
         '<select class="ivsel" title="Temporalidad">'+Object.keys(INTERVALS).map(i=>`<option value="${i}">${i}</option>`).join('')+'</select>'+
         '<span class="last"></span>'+
-        '<button class="mkt" title="Cambiar entre Spot y Futuros perpetuos">Spot</button>'+
+        '<button class="mkt" title="Cambiar de mercado: Spot → Futuros (Binance) → Hyperliquid TradFi → Twelve Data (oro, plata, acciones con años de historial)">Spot</button>'+
+        '<button class="emab" title="Medias móviles de esta gráfica (EMA, SMA o HMA)">MA</button>'+
         '<button class="inv" title="Invertir eje de precios (los números bajos arriba)"><svg viewBox="0 0 24 24"><path d="M8 4v16M4 8l4-4 4 4M16 20V4M12 16l4 4 4-4"/></svg></button>'+
         '<button class="clr" title="Borrar todos los dibujos de este par"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>'+
         '<button class="fsb" title="Pantalla completa"></button>'+
       '</div>'+
-      '<div class="pbody"><div class="chart"></div><canvas class="ov"></canvas><div class="msg"></div>'+
-        '<div class="legend"><div class="lg1"><span class="coin"></span><span class="lgs"></span><span class="lgm"></span></div><div class="lg2"></div></div></div>';
+      '<div class="pbody"><div class="chart"></div><canvas class="ov"></canvas><div class="msg"></div></div>';
     this.root=root;
     gridEl.appendChild(root);
     this.symEl=$('.sym',root);
@@ -946,8 +855,6 @@ class Panel{
     this.canvas=$('.ov',root);
     this.ctx=this.canvas.getContext('2d');
     this.msgEl=$('.msg',root);
-    this.lgCoin=$('.coin',root);this.lgSym=$('.lgs',root);this.lgMeta=$('.lgm',root);this.lgPrice=$('.lg2',root);
-    this.open24=null;
 
     const fmtDate=t=>{
       const iv=this.cfg.interval,d=new Date(t*1000);
@@ -957,12 +864,12 @@ class Panel{
     };
     this.chart=LightweightCharts.createChart(this.chartEl,{
       autoSize:true,
-      layout:{background:{type:'solid',color:'#2b2e37'},textColor:'#b2b5be',fontSize:11},
-      grid:{vertLines:{color:'#343845'},horzLines:{color:'#343845'}},
+      layout:{background:{type:'solid',color:'#0c0f14'},textColor:'#8b95a5',fontSize:11},
+      grid:{vertLines:{color:'#141a23'},horzLines:{color:'#141a23'}},
       crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
-      rightPriceScale:{borderColor:'#3a3e4a'},
+      rightPriceScale:{borderColor:'#1e2530',mode:LightweightCharts.PriceScaleMode.Normal},
       timeScale:{
-        borderColor:'#3a3e4a',timeVisible:true,secondsVisible:false,rightOffset:8,
+        borderColor:'#1e2530',timeVisible:true,secondsVisible:false,rightOffset:8,
         tickMarkFormatter:(time,type)=>{
           const d=new Date(time*1000),p=n=>String(n).padStart(2,'0');
           if(type===0) return String(d.getFullYear());
@@ -1012,8 +919,12 @@ class Panel{
     this.fsEl.addEventListener('click',()=>toggleSolo(this));
     this.mktEl=$('.mkt',root);
     this.mktEl.addEventListener('click',()=>{
-      const order=['spot','futures','hl','td'];
-      this.setMarket(order[(order.indexOf(this.cfg.market)+1)%order.length]);
+      const c=this.cfg,m=c.market;
+      if(m==='spot') c.market='futures';
+      else if(m==='futures'){c.market='hl';c.bnSymbol=c.symbol;c.symbol=c.hlSymbol||HL_DEFAULT;}
+      else if(m==='hl'){c.market='td';c.hlSymbol=c.symbol;c.symbol=c.tdSymbol||TD_DEFAULT;}
+      else{c.market='spot';c.tdSymbol=c.symbol;c.symbol=c.bnSymbol||'BTCUSDT';}
+      save();this.syncHeader();this.load();
     });
     this.invEl=$('.inv',root);
     this.invEl.addEventListener('click',()=>{
@@ -1053,11 +964,10 @@ class Panel{
     this.load();
   }
 
-  get key(){const mk=this.cfg.market;return this.cfg.symbol+(mk==='futures'?':F':mk==='hl'?'@HL':mk==='td'?'@TD':'');}
+  get key(){const m=this.cfg.market;return this.cfg.symbol+(m==='futures'?':F':m==='hl'?'@HL':m==='td'?'@TD':'');}
 
   destroy(){
     this.reqId++;
-    clearInterval(this.t24);
     this.closeWS();
     this.ro.disconnect();
     this.chart.remove();
@@ -1066,35 +976,22 @@ class Panel{
 
   syncHeader(){
     this.symEl.value=this.cfg.symbol;
-    setCoin(this.lgCoin,this.cfg.symbol);
-    this.lgSym.textContent=this.cfg.symbol;
-    this.lgMeta.textContent=this.cfg.interval+' · '+mktLabel(this.cfg.market);
-    if(typeof mSync==='function') mSync();
-    const mk=this.cfg.market,fut=mk==='futures',hl=mk==='hl',td=mk==='td';
+    const m=this.cfg.market,fut=m==='futures',hl=m==='hl',td=m==='td';
     this.symEl.setAttribute('list',td?'symlistT':hl?'symlistH':fut?'symlistF':'symlist');
     this.mktEl.textContent=td?'TD':hl?'HL':fut?'Fut':'Spot';
     this.selEl.value=this.cfg.interval;
     this.mktEl.classList.toggle('fut',fut);
+    this.mktEl.classList.toggle('hl',hl);
+    this.mktEl.classList.toggle('td',td);
+    this.symEl.classList.toggle('hlw',hl);
+    this.symEl.classList.toggle('tdw',td);
     this.root.querySelectorAll('.ivs button').forEach(b=>b.classList.toggle('on',b.dataset.iv===this.cfg.interval));
   }
   setMsg(t,err){this.msgEl.textContent=t||'';this.msgEl.className='msg'+(err?' err':'');}
 
-  // Cambia de mercado recordando el último par de cada familia (Binance, Hyperliquid, Twelve Data)
-  setMarket(mk){
-    const c=this.cfg,cur=c.market;
-    if(mk===cur) return;
-    const bn=x=>x==='spot'||x==='futures';
-    const slot=x=>x==='hl'?'hlSymbol':x==='td'?'tdSymbol':'bnSymbol';
-    if(!(bn(cur)&&bn(mk))){
-      c[slot(cur)]=c.symbol;
-      c.symbol=c[slot(mk)]||(mk==='hl'?HL_DEFAULT:mk==='td'?TD_DEFAULT:'BTCUSDT');
-    }
-    c.market=mk;
-    save();this.syncHeader();this.load();
-  }
   setSymbol(raw){
-    const mk=this.cfg.market;
-    const s=mk==='hl'?normalizeHL(raw):mk==='td'?normalizeTD(raw):normalizeSymbol(raw);
+    const m=this.cfg.market;
+    const s=m==='hl'?normalizeHL(raw):m==='td'?normalizeTD(raw):normalizeSymbol(raw);
     if(!s){this.symEl.value=this.cfg.symbol;return;}
     this.symEl.value=s;
     if(s===this.cfg.symbol&&this.data.length) return;
@@ -1110,7 +1007,6 @@ class Panel{
     const id=++this.reqId;
     this.closeWS();
     this.data=[];this.noMore=false;this.loadingMore=false;
-    this.open24=null;clearInterval(this.t24);if(this.lgPrice) this.lgPrice.textContent='';
     this.series.setData([]);
     this.emaSetAll();
     this.lastEl.textContent='';
@@ -1148,27 +1044,10 @@ class Panel{
       this.setMsg('');
       this.updateLast();
       this.openWS(id);
-      this.fetch24(id);
-      clearInterval(this.t24);this.t24=setInterval(()=>this.fetch24(id),300000);
       this.dirty=true;
     }catch(e){
       if(id!==this.reqId) return;
       this.setMsg((e&&e.message)||'Error al cargar',true);
-    }
-  }
-  async fetch24(id){
-    if(this.cfg.market==='hl'||this.cfg.market==='td') return;
-    const fut=this.cfg.market==='futures';
-    const urls=fut?[REST_F+'/fapi/v1/ticker/24hr?symbol='+this.cfg.symbol]:REST.map(b=>b+'/api/v3/ticker/24hr?symbol='+this.cfg.symbol);
-    for(const u of urls){
-      try{
-        const r=await fetch(u);if(!r.ok) continue;
-        const j=await r.json();
-        if(id!==this.reqId) return;
-        const o=+j.openPrice;
-        if(o>0){this.open24=o;this.updateLast();}
-        return;
-      }catch(e){}
     }
   }
   async loadMore(){
@@ -1311,6 +1190,7 @@ class Panel{
     this.updateLast();
     this.dirty=true;
   }
+
   /* --- EMAs (hasta 4 por gráfica; la configuración se guarda en cfg.emas) --- */
   initEma(){
     const a=Array.isArray(this.cfg.emas)?this.cfg.emas:[];
@@ -1321,9 +1201,15 @@ class Panel{
     });
     this.emaS=[null,null,null,null];
     this.emaV=[[],[],[],[]];
+    this.emaBtn=$('.emab',this.root);
+    this.emaBtn.addEventListener('click',()=>toggleEmaPanel(this));
     this.emaSync();
   }
-  emaSync(){ if(typeof mMaSync==='function') mMaSync(); }
+  emaSync(){
+    const n=this.cfg.emas.filter(e=>e.on).length;
+    this.emaBtn.classList.toggle('has',n>0);
+    this.emaBtn.innerHTML='MA'+(n?'<span class="n">'+n+'</span>':'');
+  }
   emaCalc(e){
     const c=this.data.map(b=>b.close),len=e.len;
     if(e.t==='sma'){
@@ -1406,15 +1292,6 @@ class Panel{
     if(!l) return;
     this.lastEl.textContent=l.close.toFixed(this.dec);
     this.lastEl.className='last '+(l.close>=l.open?'up':'down');
-    const nf=v=>v.toLocaleString('es-ES',{minimumFractionDigits:this.dec,maximumFractionDigits:this.dec});
-    let txt=nf(l.close),up=l.close>=l.open;
-    if(this.open24){
-      const ch=l.close-this.open24,pc=ch/this.open24*100,sg=ch>=0?'+':'−';
-      up=ch>=0;
-      txt+='  '+sg+nf(Math.abs(ch))+' ('+sg+Math.abs(pc).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+'%)';
-    }
-    this.lgPrice.textContent=txt;
-    this.lgPrice.className='lg2 '+(up?'up':'down');
     if(typeof calcTick==='function') calcTick(this);
   }
 
@@ -1507,7 +1384,7 @@ class Panel{
     const x1=this.xOf(d.p1.t),x2=this.xOf(d.p2.t),y1=this.yOf(d.p1.p),y2=this.yOf(d.p2.p);
     if(x1==null||x2==null||y1==null||y2==null) return null;
     const levels=[];
-    for(const lv of state.fibLevels){
+    for(const lv of (d.levels||state.fibLevels)){
       const price=d.p2.p+(d.p1.p-d.p2.p)*lv;
       const y=this.yOf(price);
       if(y!=null) levels.push({lv,price,y});
@@ -1535,6 +1412,23 @@ class Panel{
     return[
       ['p1',g.x1,g.L0.y1],['p2',g.x2,g.L0.y2],['p3',g.x1,g.L1.y1],['p4',g.x2,g.L1.y2],
       ['m0',xm,(g.L0.y1+g.L0.y2)/2],['m1',xm,(g.L1.y1+g.L1.y2)/2]
+    ];
+  }
+  rectGeom(d,ps){
+    const x1=this.xOf(d.p1.t),x2=this.xOf(d.p2.t),y1=this.yOf(d.p1.p),y2=this.yOf(d.p2.p);
+    if(x1==null||x2==null||y1==null||y2==null) return null;
+    const w=(ps||this.paneSize()).w;
+    let L=Math.min(x1,x2),R=Math.max(x1,x2);
+    if(d.extL) L=Math.min(L,-2);
+    if(d.extR) R=Math.max(R,w+2);
+    return{x1,x2,y1,y2,L,R,T:Math.min(y1,y2),B:Math.max(y1,y2)};
+  }
+  // Tiradores: 4 esquinas y 4 puntos medios de los lados (como TradingView)
+  rectHandles(g){
+    const xm=(g.x1+g.x2)/2,ym=(g.y1+g.y2)/2;
+    return[
+      ['a',g.x1,g.y1],['b',g.x2,g.y2],['c',g.x1,g.y2],['d',g.x2,g.y1],
+      ['x1',g.x1,ym],['x2',g.x2,ym],['y1',xm,g.y1],['y2',xm,g.y2]
     ];
   }
   // Distancia en precio entre la línea base (p1-p2) y el punto q, medida en vertical
@@ -1565,8 +1459,8 @@ class Panel{
         if(Math.hypot(x-g.x1,y-g.y1)<=9*k) return{d,part:'p1'};
         if(Math.hypot(x-g.x2,y-g.y2)<=9*k) return{d,part:'p2'};
         if(segDist(x,y,g.x1,g.y1,g.x2,g.y2)<=6*k) return{d,part:'body'};
-        const xr=state.fibExt?Infinity:g.xr+6*k;
-        if((state.fibExtL||x>=g.xl-6*k)&&x<=xr){
+        const xr=d.extR?Infinity:g.xr+6*k;
+        if((d.extL||x>=g.xl-6*k)&&x<=xr){
           for(const l of g.levels) if(Math.abs(l.y-y)<=6*k) return{d,part:'body'};
         }
       }else if(d.type==='trend'){
@@ -1583,6 +1477,15 @@ class Panel{
           const[a,b]=extLine({x:g.x1,y:l.y1},{x:g.x2,y:l.y2},!!state.chExtL,!!state.chExtR,w);
           if(segDist(x,y,a.x,a.y,b.x,b.y)<=tol) return{d,part:'body'};
         }
+      }else if(d.type==='rect'){
+        const g=this.rectGeom(d);if(!g) continue;
+        for(const[part,hx,hy] of this.rectHandles(g)) if(Math.hypot(x-hx,y-hy)<=9*k) return{d,part};
+        const tol=Math.max(6,d.w/2+3)*k;
+        if(x>=g.L-tol&&x<=g.R+tol&&y>=g.T-tol&&y<=g.B+tol){
+          const edge=Math.abs(y-g.T)<=tol||Math.abs(y-g.B)<=tol||
+            (!d.extL&&Math.abs(x-g.L)<=tol)||(!d.extR&&Math.abs(x-g.R)<=tol);
+          if(edge||d.fo>0) return{d,part:'body'};
+        }
       }
     }
     return null;
@@ -1590,7 +1493,6 @@ class Panel{
 
   /* --- eventos --- */
   onDown(e){
-    if(CROSS_TOOLS.has(tool)){this.crossDown(e);return;}
     this.consumed=false;
     this.touch=e.pointerType==='touch';
     if(e.button!==0) return;
@@ -1603,6 +1505,8 @@ class Panel{
     if(tool==='cursor'){
       const h=state.lockDrawings?null:this.hit(x,y);
       const l=this.xToL(x),pt=this.pt(x,y);
+      const ns=h&&(h.d.type==='rect'||h.d.type==='fib')?{key:sym,id:h.d.id}:null;
+      if((ns&&ns.id)!==(selD&&selD.id)) selectDrawing(ns);
       if(h&&l!=null&&pt){
         consume=true;
         this.drag={kind:'move',d:h.d,part:h.part,orig:JSON.parse(JSON.stringify(h.d)),startL:l,startP:pt.p,moved:false};
@@ -1616,18 +1520,50 @@ class Panel{
       const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
       if(pt) addDrawing(sym,{type:'h',t:pt.t,price:pt.p,color:state.color,w:state.width});
       setTool('cursor');
-    }else if(tool==='fib'||tool==='trend'||tool==='chan'){
+    }else if(tool==='fib'){
+      consume=true;
+      const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
+      if(pt){
+        if(!this.pending){
+          this.pending={p1:pt,x0:x,y0:y,down:true};
+          this.preview=Object.assign({type:'fib',p1:pt,p2:pt,color:state.color},fibStyle());
+        }else{
+          this.finishFib(pt);
+        }
+      }
+    }else if(tool==='trend'){
+      consume=true;
+      const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
+      if(pt){
+        if(!this.pending){
+          this.pending={p1:pt,x0:x,y0:y,down:true};
+          this.preview={type:'trend',p1:pt,p2:pt,color:state.color,w:state.width};
+        }else{
+          this.finishTrend(pt);
+        }
+      }
+    }else if(tool==='rect'){
+      consume=true;
+      const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
+      if(pt){
+        if(!this.pending){
+          this.pending={p1:pt,x0:x,y0:y,down:true};
+          this.preview=Object.assign({type:'rect',p1:pt,p2:pt,color:state.color,w:state.width},rectStyle());
+        }else{
+          this.finishRect(pt);
+        }
+      }
+    }else if(tool==='chan'){
       consume=true;
       const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
       if(pt){
         if(!this.pending){
           this.pending={p1:pt,x0:x,y0:y,down:true,stage:1};
-          this.preview=tool==='fib'?{type:'fib',p1:pt,p2:pt,color:state.color}:{type:'trend',seg:tool==='chan',p1:pt,p2:pt,color:state.color,w:state.width};
-        }else if(this.touch){
-          // en el móvil: al tocar se ve la vista previa, puedes deslizar el dedo y se fija al soltar
-          this.pending.fin=true;this.snapMark=sp.mark;this.updPreview(pt);this.dirty=true;
+          this.preview={type:'trend',seg:true,p1:pt,p2:pt,color:state.color,w:state.width};
+        }else if(this.pending.stage===1){
+          this.chanSecond(pt);
         }else{
-          this.nextPoint(pt);
+          this.finishChan(pt);
         }
       }
     }else if(tool==='brush'){
@@ -1647,13 +1583,16 @@ class Panel{
     }
   }
   onMove(e){
-    if(CROSS_TOOLS.has(tool)){this.crossMove(e);return;}
     const{x,y}=this.pos(e);
     if(this.drag){this.dragMove(x,y,e);return;}
-    if(tool==='h'||tool==='fib'||tool==='trend'||tool==='chan'){
+    if(tool==='h'||tool==='fib'||tool==='trend'||tool==='chan'||tool==='rect'){
       const s=this.snapPt(x,y,e);
       this.snapMark=s?s.mark:null;
-      if(this.pending&&s) this.updPreview(s.pt);
+      if(this.pending&&s&&this.preview){
+        if(tool==='fib') this.preview=Object.assign({type:'fib',p1:this.pending.p1,p2:s.pt,color:state.color},fibStyle());
+        else if(tool==='trend'||tool==='rect'||this.pending.stage===1) this.preview.p2=s.pt;
+        else this.preview.off=this.chanOff(this.pending.p1,this.pending.p2,s.pt);
+      }
       this.dirty=true;
       return;
     }
@@ -1665,7 +1604,6 @@ class Panel{
     this.setCursor(h);
   }
   onUp(e){
-    if(CROSS_TOOLS.has(tool)){this.crossUp(e);return;}
     const dr=this.drag;this.drag=null;
     if(dr){
       if(dr.kind==='move'){this.snapMark=null;this.dirty=true;if(dr.moved) save();}
@@ -1676,116 +1614,21 @@ class Panel{
         this.dirty=true;
       }
     }
-    if((tool==='fib'||tool==='trend'||tool==='chan')&&this.pending){
+    if((tool==='fib'||tool==='trend'||tool==='chan'||tool==='rect')&&this.pending&&this.pending.down){
       const{x,y}=this.pos(e);
-      if(this.pending.fin){
-        this.pending.fin=false;this.snapMark=null;
+      if(Math.hypot(x-this.pending.x0,y-this.pending.y0)>6){
         const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
-        if(pt) this.nextPoint(pt);
-      }else if(this.pending.down){
-        this.pending.down=false;
-        if(Math.hypot(x-this.pending.x0,y-this.pending.y0)>6){
-          const sp=this.snapPt(x,y,e),pt=sp&&sp.pt;
-          if(pt) this.nextPoint(pt);
+        if(pt){
+          if(tool==='fib') this.finishFib(pt);
+          else if(tool==='trend') this.finishTrend(pt);
+          else if(tool==='rect') this.finishRect(pt);
+          else this.chanSecond(pt);
         }
+      }else{
+        this.pending.down=false;
       }
     }
     this.consumed=false;
-  }
-  /* --- Cruz de precisión (como TradingView móvil) ---
-     Un dedo mueve la cruz a distancia (no queda debajo del dedo).
-     Un toque corto fija el punto donde está la cruz. Dos dedos: zoom/desplazar la gráfica. */
-  crossInit(){
-    const ps=this.paneSize();
-    if(!this.cross) this.cross={x:ps.w*0.5,y:ps.h*0.45};
-    this.crossSnap();
-  }
-  crossSnap(){
-    const ps=this.paneSize(),c=this.cross;
-    c.x=Math.max(0,Math.min(ps.w-1,c.x));c.y=Math.max(0,Math.min(ps.h-1,c.y));
-    const s=this.snapPt(c.x,c.y,null);
-    this.crossPt=s?s.pt:null;
-    this.snapMark=s?s.mark:null;
-    if(this.pending&&this.crossPt) this.updPreview(this.crossPt);
-    this.dirty=true;
-  }
-  crossDown(e){
-    this.consumed=false;
-    if(e.button!==0&&e.pointerType==='mouse') return;
-    setActive(this);
-    if(this.cg){
-      // segundo dedo: se cancela el gesto y la gráfica hace zoom / desplaza
-      this.cg=null;this.multi=true;
-      return;
-    }
-    if(this.multi) return;
-    const{x,y}=this.pos(e),ps=this.paneSize();
-    if(x<0||y<0||x>this.ow||y>this.oh) return;
-    this.crossInit();
-    this.cg={id:e.pointerId,x0:e.clientX,y0:e.clientY,cx0:this.cross.x,cy0:this.cross.y,moved:false};
-    this.consumed=true;
-    e.preventDefault();e.stopPropagation();
-    try{this.body.setPointerCapture(e.pointerId);}catch(_){}
-  }
-  crossMove(e){
-    const g=this.cg;
-    if(!g||e.pointerId!==g.id) return;
-    const dx=e.clientX-g.x0,dy=e.clientY-g.y0;
-    if(!g.moved&&Math.hypot(dx,dy)>7) g.moved=true;
-    if(!g.moved) return;
-    this.cross.x=g.cx0+dx;this.cross.y=g.cy0+dy;
-    this.crossSnap();
-  }
-  crossUp(e){
-    const g=this.cg;
-    if(this.multi){
-      // cuando se levantan los dedos, volver al modo cruz
-      clearTimeout(this.multiT);this.multiT=setTimeout(()=>{this.multi=false;},250);
-      this.consumed=false;return;
-    }
-    this.consumed=false;
-    if(!g||e.pointerId!==g.id) return;
-    this.cg=null;
-    if(g.moved||e.type==='pointercancel') return;
-    // toque corto: fijar el punto donde está la cruz
-    this.crossSnap();
-    const pt=this.crossPt;
-    if(!pt) return;
-    if(tool==='h'){
-      addDrawing(this.key,{type:'h',t:pt.t,price:pt.p,color:state.color,w:state.width});
-      setTool('cursor');return;
-    }
-    if(!this.pending){
-      this.pending={p1:pt,stage:1};
-      this.preview=tool==='fib'?{type:'fib',p1:pt,p2:pt,color:state.color}:{type:'trend',seg:tool==='chan',p1:pt,p2:pt,color:state.color,w:state.width};
-      this.dirty=true;
-    }else{
-      this.nextPoint(pt);
-    }
-    if(typeof mToolSync==='function') mToolSync();
-  }
-  drawCross(ctx,ps){
-    const c=this.cross;if(!c) return;
-    const m=this.snapMark,x=m?m.x:c.x,y=m?m.y:c.y;
-    ctx.save();
-    ctx.setLineDash([5,4]);ctx.lineWidth=1;ctx.strokeStyle='rgba(220,224,232,0.85)';
-    ctx.beginPath();ctx.moveTo(0,y+0.5);ctx.lineTo(ps.w,y+0.5);ctx.moveTo(x+0.5,0);ctx.lineTo(x+0.5,ps.h);ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle='#fff';ctx.strokeStyle='#2962ff';ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.restore();
-    // etiquetas de precio y fecha en los ejes
-    const pt=this.crossPt;if(!pt) return;
-    ctx.save();
-    ctx.font='11px -apple-system,system-ui,sans-serif';ctx.textBaseline='middle';
-    const ptxt=pt.p.toFixed(this.dec),ph=20;
-    ctx.fillStyle='#2962ff';ctx.fillRect(ps.w,y-ph/2,ps.psw,ph);
-    ctx.fillStyle='#fff';ctx.textAlign='left';ctx.fillText(ptxt,ps.w+6,y);
-    const ttxt=fmtCrossTime(pt.t,this.cfg.interval),tw=ctx.measureText(ttxt).width+14;
-    let tx=Math.max(0,Math.min(ps.w-tw,x-tw/2));
-    ctx.fillStyle='#2962ff';ctx.fillRect(tx,ps.h,tw,this.oh-ps.h);
-    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(ttxt,tx+tw/2,ps.h+(this.oh-ps.h)/2);
-    ctx.restore();
   }
   smoothStroke(pts){
     if(pts.length<3||BRUSH_SMOOTH_PASSES<1) return pts;
@@ -1802,25 +1645,21 @@ class Panel{
     const last=sp.length-1;
     return sp.map((q,i)=>(i===0||i===last)?pts[i]:(this.pt(q.x,q.y)||pts[i]));
   }
-  updPreview(pt){
-    if(!this.pending||!this.preview) return;
-    if(tool==='fib') this.preview={type:'fib',p1:this.pending.p1,p2:pt,color:state.color};
-    else if(tool==='trend'||this.pending.stage===1) this.preview.p2=pt;
-    else this.preview.off=this.chanOff(this.pending.p1,this.pending.p2,pt);
-  }
-  nextPoint(pt){
-    if(tool==='fib') this.finishFib(pt);
-    else if(tool==='trend') this.finishTrend(pt);
-    else if(this.pending.stage===1) this.chanSecond(pt);
-    else this.finishChan(pt);
-  }
   finishFib(p2){
-    addDrawing(this.key,{type:'fib',p1:this.pending.p1,p2,color:state.color});
+    const d=Object.assign({type:'fib',p1:this.pending.p1,p2,color:state.color},fibStyle());
+    addDrawing(this.key,d);
     setTool('cursor');
+    selectDrawing({key:this.key,id:d.id});
   }
   finishTrend(p2){
     addDrawing(this.key,{type:'trend',p1:this.pending.p1,p2,color:state.color,w:state.width});
     setTool('cursor');
+  }
+  finishRect(p2){
+    const d=Object.assign({type:'rect',p1:this.pending.p1,p2,color:state.color,w:state.width},rectStyle());
+    addDrawing(this.key,d);
+    setTool('cursor');
+    selectDrawing({key:this.key,id:d.id});
   }
   chanSecond(p2){
     const pd=this.pending;
@@ -1895,12 +1734,28 @@ class Panel{
         }
         else{d.p1=shift(o.p1);d.p2=shift(o.p2);}
       }
+      else if(d.type==='rect'){
+        const P=dr.part;
+        if(P==='body'){d.p1=shift(o.p1);d.p2=shift(o.p2);}
+        else{
+          const q=s?s.pt:pt,p1={t:o.p1.t,p:o.p1.p},p2={t:o.p2.t,p:o.p2.p};
+          if(P==='a'){p1.t=q.t;p1.p=q.p;}
+          else if(P==='b'){p2.t=q.t;p2.p=q.p;}
+          else if(P==='c'){p1.t=q.t;p2.p=q.p;}
+          else if(P==='d'){p2.t=q.t;p1.p=q.p;}
+          else if(P==='x1') p1.t=q.t;
+          else if(P==='x2') p2.t=q.t;
+          else if(P==='y1') p1.p=q.p;
+          else if(P==='y2') p2.p=q.p;
+          d.p1=p1;d.p2=p2;
+        }
+      }
       invalidateAll();
     }
   }
   setCursor(h){
     const c=this.body.classList;
-    c.toggle('cur-cross',tool==='h'||tool==='fib'||tool==='brush'||tool==='trend'||tool==='chan');
+    c.toggle('cur-cross',tool==='h'||tool==='fib'||tool==='brush'||tool==='trend'||tool==='chan'||tool==='rect');
     c.toggle('cur-move',tool==='cursor'&&!!h);
     c.toggle('cur-del',tool==='eraser');
   }
@@ -1923,9 +1778,9 @@ class Panel{
     const list=state.hideDrawings?[]:drawingsOf(this.key);
     ctx.save();
     ctx.beginPath();ctx.rect(0,0,ps.w,ps.h);ctx.clip();
-    for(const d of list) this.drawOne(ctx,d,ps,d.id===this.hoverId);
+    for(const d of list) this.drawOne(ctx,d,ps,d.id===this.hoverId||(!!selD&&d.id===selD.id));
     if(this.preview) this.drawOne(ctx,this.preview,ps,true);
-    if(this.snapMark&&!(CROSS_TOOLS.has(tool)&&this.cross)){
+    if(this.snapMark){
       ctx.setLineDash([]);ctx.lineWidth=1.5;
       ctx.strokeStyle='#ffffff';ctx.fillStyle='rgba(255,255,255,0.25)';
       ctx.beginPath();ctx.arc(this.snapMark.x,this.snapMark.y,5,0,Math.PI*2);ctx.fill();ctx.stroke();
@@ -1936,7 +1791,6 @@ class Panel{
       if(d.t!=null){const x0=this.xOf(d.t);if(x0==null||x0>ps.w) continue;}
       this.drawTag(ctx,d.price,d.color,ps);
     }
-    if(CROSS_TOOLS.has(tool)&&this.cross) this.drawCross(ctx,ps);
   }
   drawTag(ctx,price,color,ps){
     const y=this.yOf(price);
@@ -1973,7 +1827,7 @@ class Panel{
       ctx.stroke();
     }else if(d.type==='fib'){
       const g=this.fibGeom(d);if(!g||!g.levels.length) return;
-      const xl=state.fibExtL?Math.min(0,g.xl):g.xl,xr=state.fibExt?Math.max(ps.w,g.xr):g.xr;
+      const xl=d.extL?Math.min(0,g.xl):g.xl,xr=d.extR?Math.max(ps.w,g.xr):g.xr;
       ctx.font='11px ui-monospace,Consolas,monospace';
       ctx.textAlign='left';ctx.textBaseline='bottom';
       for(const l of g.levels){
@@ -2007,6 +1861,13 @@ class Panel{
         const hs=this.chanHandles(g);
         this.drawHandles(ctx,hs.slice(0,4).map(h=>[h[1],h[2]]),hs.slice(4).map(h=>[h[1],h[2]]));
       }
+    }else if(d.type==='rect'){
+      const g=this.rectGeom(d,ps);if(!g) return;
+      const w=g.R-g.L,h=g.B-g.T;
+      if(d.fo>0){ctx.fillStyle=hexToRgba(d.fill||d.color,d.fo);ctx.fillRect(g.L,g.T,w,h);}
+      ctx.strokeStyle=d.color;ctx.lineWidth=d.w+(hot?1:0);ctx.lineJoin='miter';
+      ctx.strokeRect(g.L,g.T,w,h);
+      if(hot) this.drawHandles(ctx,this.rectHandles(g).map(q=>[q[1],q[2]]),[]);
     }
   }
   drawHandles(ctx,circ,sq){
@@ -2019,17 +1880,15 @@ class Panel{
 /* ---------- Herramientas y barra superior ---------- */
 function setTool(t){
   tool=t;
+  if(t!=='cursor'&&selD) selectDrawing(null);
   document.querySelectorAll('#tools button[data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===t));
   if(t!=='cursor'&&state.hideDrawings) setHidden(false);
   $('#hint').textContent=HINTS[t]||'';
   live().forEach(p=>{
     p.pending=null;p.preview=null;p.drag=null;p.hoverId=null;p.snapMark=null;p.dirty=true;
-    p.cross=null;p.crossPt=null;p.cg=null;p.multi=false;
     p.setCursor(null);
     p.body.classList.toggle('tool-on',t!=='cursor');
   });
-  if(CROSS_TOOLS.has(t)){const ap=(activePanel&&live().includes(activePanel))?activePanel:live()[0];if(ap) ap.crossInit();}
-  if(typeof mToolSync==='function') mToolSync();
 }
 $('#tools').addEventListener('click',e=>{
   const b=e.target.closest('button[data-tool]');
@@ -2151,14 +2010,16 @@ const swWrap=$('#swatches');
 SWATCHES.forEach(c=>{
   const b=document.createElement('button');
   b.className='sw';b.style.background=c;b.dataset.c=c;b.title='Color';
-  b.addEventListener('click',()=>{state.color=c;save();syncOpts();});
+  b.addEventListener('click',()=>{
+    state.color=c;
+    const r=selRectObj();if(r) r.color=c;
+    invalidateAll();syncOpts();
+  });
   swWrap.appendChild(b);
 });
 function syncOpts(){
   swWrap.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b.dataset.c===state.color));
   $('#width').value=String(state.width);
-  $('#fibExtR').checked=!!state.fibExt;
-  $('#fibExtL').checked=!!state.fibExtL;
   $('#magnet').checked=!!state.magnet;
   $('#chExtL').checked=!!state.chExtL;
   $('#chExtR').checked=!!state.chExtR;
@@ -2179,10 +2040,67 @@ chBtn.addEventListener('click',()=>showChPanel(chPanel.hidden));
 document.addEventListener('pointerdown',e=>{
   if(!chPanel.hidden&&!chPanel.contains(e.target)&&e.target!==chBtn) showChPanel(false);
 },true);
-$('#width').addEventListener('change',e=>{state.width=+e.target.value;save();});
+$('#width').addEventListener('change',e=>{
+  state.width=+e.target.value;
+  const r=selRectObj();if(r) r.w=state.width;
+  invalidateAll();
+});
+
+/* ---------- Opciones del rectángulo ---------- */
+const RECT_FILLS=['#4da3ff','#26a69a','#ef5350','#f5c518','#ff9800','#d36bff','#9aa4b2','#ffffff'];
+const rectPanel=$('#rectPanel'),rectBtn=$('#rectBtn'),rpSws=$('#rpSws'),rpColor=$('#rpColor'),rpOp=$('#rpOp');
+RECT_FILLS.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='sw';b.style.background=c;b.dataset.c=c;b.title='Relleno';b.type='button';
+  b.addEventListener('click',()=>applyRect({fill:c}));
+  rpSws.insertBefore(b,rpColor);
+});
+function syncRectPanel(){
+  const sel=selRectObj(),r=sel||state.rect;
+  $('#rpTitle').textContent=sel?'Rectángulo seleccionado':'Rectángulo (nuevos)';
+  const fill=(r.fill||state.rect.fill).toLowerCase(),fo=r.fo!=null?r.fo:state.rect.fo;
+  rpSws.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b.dataset.c.toLowerCase()===fill));
+  rpColor.value=fill;
+  rpOp.value=String(Math.round(fo*100));
+  $('#rpOpV').textContent=Math.round(fo*100)+' %';
+  $('#rpExtL').checked=!!r.extL;
+  $('#rpExtR').checked=!!r.extR;
+}
+function applyRect(patch){
+  Object.assign(state.rect,patch);
+  const r=selRectObj();
+  if(r) Object.assign(r,patch);
+  invalidateAll();
+  syncRectPanel();
+}
+rpColor.addEventListener('input',()=>applyRect({fill:rpColor.value}));
+rpOp.addEventListener('input',()=>applyRect({fo:+rpOp.value/100}));
+$('#rpExtL').addEventListener('change',e=>applyRect({extL:e.target.checked}));
+$('#rpExtR').addEventListener('change',e=>applyRect({extR:e.target.checked}));
+function showRectPanel(show){
+  if(show){
+    syncRectPanel();
+    const r=rectBtn.getBoundingClientRect();
+    rectPanel.style.top=(r.bottom+6)+'px';
+    rectPanel.style.right=Math.max(8,window.innerWidth-r.right)+'px';
+  }
+  rectPanel.hidden=!show;
+  rectBtn.classList.toggle('on',show);
+}
+rectBtn.addEventListener('click',()=>showRectPanel(rectPanel.hidden));
+// No se cierra al tocar la gráfica, así puedes ir seleccionando rectángulos con el panel abierto
+document.addEventListener('pointerdown',e=>{
+  if(!rectPanel.hidden&&!rectPanel.contains(e.target)&&e.target!==rectBtn&&!gridEl.contains(e.target)&&!e.target.closest('#swatches,#width,#tools')) showRectPanel(false);
+},true);
+function deleteSel(){
+  const r=selObj();
+  if(!r) return false;
+  const list=drawingsOf(selD.key),i=list.indexOf(r);
+  if(i>=0) list.splice(i,1);
+  selectDrawing(null);invalidateAll();
+  return true;
+}
 $('#magnet').addEventListener('change',e=>{state.magnet=e.target.checked;save();});
-$('#fibExtR').addEventListener('change',e=>{state.fibExt=e.target.checked;invalidateAll();});
-$('#fibExtL').addEventListener('change',e=>{state.fibExtL=e.target.checked;invalidateAll();});
 
 /* ---------- Calculadora de riesgo flotante ---------- */
 const calcPanel=$('#calcPanel'),calcBtn=$('#calcBtn');
@@ -2354,7 +2272,6 @@ function syncHide(){
   hideBtn.innerHTML=state.hideDrawings?ICON_EYE_OFF:ICON_EYE;
   hideBtn.classList.toggle('on',!!state.hideDrawings);
   hideBtn.title=state.hideDrawings?'Mostrar dibujos':'Ocultar dibujos';
-  if(typeof mSync==='function') mSync();
 }
 function setHidden(v){
   state.hideDrawings=!!v;
@@ -2363,6 +2280,22 @@ function setHidden(v){
   live().forEach(p=>{p.hoverId=null;p.dirty=true;});
 }
 hideBtn.addEventListener('click',()=>setHidden(!state.hideDrawings));
+
+/* ---------- Bloquear dibujos (no se pueden mover) ---------- */
+const lockBtn=$('#lockBtn');
+function syncLock(){
+  lockBtn.innerHTML=state.lockDrawings
+    ?'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>'
+    :'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 7.6-1.7"/></svg>';
+  lockBtn.classList.toggle('on',!!state.lockDrawings);
+  lockBtn.title=state.lockDrawings?'Desbloquear dibujos (L)':'Bloquear dibujos (L)';
+}
+function toggleLock(){
+  state.lockDrawings=!state.lockDrawings;save();syncLock();
+  live().forEach(p=>{p.hoverId=null;p.drag=null;p.setCursor(null);p.dirty=true;});
+  cpToast(state.lockDrawings?'Dibujos bloqueados':'Dibujos desbloqueados');
+}
+lockBtn.addEventListener('click',toggleLock);
 
 /* ---------- Editor de niveles Fibonacci ---------- */
 const FIB_PRESETS={
@@ -2386,14 +2319,35 @@ function parseLevels(text){
   }
   return Array.from(new Set(out)).sort((a,b)=>a-b);
 }
-function applyLevels(list){
-  state.fibLevels=list;
+// Si hay un Fibonacci seleccionado, los cambios van solo a ese. Si no, a los que dibujes a partir de ahora.
+function applyFib(patch){
+  const f=selFibObj();
+  if(f){
+    if(patch.levels) f.levels=patch.levels.slice();
+    if('extL' in patch) f.extL=patch.extL;
+    if('extR' in patch) f.extR=patch.extR;
+  }else{
+    if(patch.levels) state.fibLevels=patch.levels.slice();
+    if('extL' in patch) state.fibExtL=patch.extL;
+    if('extR' in patch) state.fibExt=patch.extR;
+  }
   invalidateAll();
+  syncFibPanel();
+}
+function syncFibPanel(){
+  const f=selFibObj();
+  $('#fpTitle').textContent=f?'Fibonacci seleccionado':'Fibonacci (nuevos)';
+  $('#fpHelp').textContent=f
+    ?'Los cambios solo afectan a este Fibonacci. Haz clic en un hueco vacío de la gráfica para editar los niveles de los nuevos.'
+    :'Ninguno seleccionado: los cambios se aplican a los Fibonacci que dibujes a partir de ahora. Haz clic en uno para editar solo ese.';
+  fibInput.value=(f?f.levels:state.fibLevels).join(' ');
+  $('#fibExtL').checked=f?!!f.extL:!!state.fibExtL;
+  $('#fibExtR').checked=f?!!f.extR:!!state.fibExt;
+  fibErr.textContent='';
 }
 function showFibPanel(show){
   if(show){
-    fibInput.value=state.fibLevels.join(' ');
-    fibErr.textContent='';
+    syncFibPanel();
     const r=fibBtn.getBoundingClientRect();
     fibPanel.style.top=(r.bottom+6)+'px';
     fibPanel.style.right=Math.max(8,window.innerWidth-r.right)+'px';
@@ -2409,8 +2363,9 @@ function submitLevels(){
   const list=parseLevels(fibInput.value);
   if(!list||list.length<2){fibErr.textContent='Escribe al menos 2 números válidos.';return;}
   if(list.length>30){fibErr.textContent='Máximo 30 niveles.';return;}
-  applyLevels(list);
-  showFibPanel(false);
+  const one=!!selFibObj();
+  applyFib({levels:list});
+  cpToast(one?'Niveles aplicados a este Fibonacci':'Niveles guardados para los nuevos Fibonacci');
 }
 fibBtn.addEventListener('click',()=>showFibPanel(fibPanel.hidden));
 $('#fibApply').addEventListener('click',submitLevels);
@@ -2418,15 +2373,16 @@ fibInput.addEventListener('keydown',e=>{
   if(e.key==='Enter') submitLevels();
   else if(e.key==='Escape') showFibPanel(false);
 });
+$('#fibExtL').addEventListener('change',e=>applyFib({extL:e.target.checked}));
+$('#fibExtR').addEventListener('change',e=>applyFib({extR:e.target.checked}));
 fibPanel.addEventListener('click',e=>{
   const b=e.target.closest('button[data-preset]');
   if(!b) return;
-  applyLevels(FIB_PRESETS[b.dataset.preset].slice());
-  fibInput.value=state.fibLevels.join(' ');
-  fibErr.textContent='';
+  applyFib({levels:FIB_PRESETS[b.dataset.preset]});
 });
+// No se cierra al tocar la gráfica, así puedes ir seleccionando Fibonacci con el panel abierto
 document.addEventListener('pointerdown',e=>{
-  if(!fibPanel.hidden&&!fibPanel.contains(e.target)&&e.target!==fibBtn) showFibPanel(false);
+  if(!fibPanel.hidden&&!fibPanel.contains(e.target)&&e.target!==fibBtn&&!gridEl.contains(e.target)&&!e.target.closest('#tools')) showFibPanel(false);
 },true);
 
 /* ---------- Exportar / importar dibujos ---------- */
@@ -2452,6 +2408,7 @@ function drawingsCSV(){
       else if(d.type==='fib') pts=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
       else if(d.type==='h') pts=[{t:d.t,p:d.price}];
       else if(d.type==='trend') pts=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
+      else if(d.type==='rect') pts=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
       else if(d.type==='chan'){
         // base inicio, paralela inicio, paralela fin, base fin (inicio/fin = línea base)
         const[b1,b2]=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
@@ -2483,10 +2440,11 @@ function importDrawings(obj){
     if(!Array.isArray(src[key])) continue;
     const list=drawingsOf(key),ids=new Set(list.map(d=>d.id));
     for(const d of src[key]){
-      if(!d||!/^(brush|fib|h|trend|chan)$/.test(d.type)){skipped++;continue;}
+      if(!d||!/^(brush|fib|h|trend|chan|rect)$/.test(d.type)){skipped++;continue;}
       if(d.id&&ids.has(d.id)){skipped++;continue;}
       const c=JSON.parse(JSON.stringify(d));
       if(!c.id) c.id=Math.random().toString(36).slice(2,9);
+      fixFib(c);
       list.push(c);ids.add(c.id);added++;
     }
   }
@@ -2508,6 +2466,48 @@ $('#impFile').addEventListener('change',e=>{
   r.readAsText(f);
 });
 
+/* ---------- Twelve Data: clave y opciones ---------- */
+const tdPanel=$('#tdPanel'),tdBtn=$('#tdBtn');
+function showTdPanel(show){
+  if(show){
+    $('#tdKey').value=tdKey();
+    $('#tdRef').value=String(tdRefreshMin());
+    $('#tdErr').textContent='';
+    tdStatus();
+    const r=tdBtn.getBoundingClientRect();
+    tdPanel.style.top=(r.bottom+6)+'px';
+    tdPanel.style.right=Math.max(8,window.innerWidth-r.right)+'px';
+  }
+  tdPanel.hidden=!show;
+  tdBtn.classList.toggle('on',show);
+  if(show) $('#tdKey').focus();
+}
+tdBtn.addEventListener('click',()=>showTdPanel(tdPanel.hidden));
+document.addEventListener('pointerdown',e=>{
+  if(!tdPanel.hidden&&!tdPanel.contains(e.target)&&e.target!==tdBtn) showTdPanel(false);
+},true);
+function saveTd(){
+  const k=$('#tdKey').value.trim();
+  if(!k){$('#tdErr').textContent='Pega tu clave primero.';return;}
+  const changed=k!==tdKey();
+  lsSet(TD_KEY_LS,k);
+  lsSet(TD_REF_LS,$('#tdRef').value);
+  if(changed) tdQ.cache.clear();
+  showTdPanel(false);
+  // Recarga las gráficas de Twelve Data que no tenían datos; al resto les aplica el nuevo ritmo de actualización
+  live().filter(p=>p.cfg.market==='td').forEach(p=>{
+    if(changed||!p.data.length) p.load();
+    else p.openPollTD(p.reqId);
+  });
+  tdStatus();
+  cpToast('Twelve Data guardado');
+}
+$('#tdSave').addEventListener('click',saveTd);
+$('#tdKey').addEventListener('keydown',e=>{if(e.key==='Enter') saveTd();else if(e.key==='Escape') showTdPanel(false);});
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden) live().forEach(p=>{if(p.cfg.market==='td'&&p.data.length) p.pollTD(p.reqId);});
+});
+
 function undo(){
   if(state.hideDrawings) return;
   const p=activePanel||live()[0];
@@ -2520,228 +2520,19 @@ window.addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
   if((e.ctrlKey||e.metaKey)&&k==='z'){e.preventDefault();undo();return;}
   if(e.ctrlKey||e.metaKey||e.altKey) return;
-  const map={v:'cursor',h:'h',f:'fib',b:'brush',e:'eraser',t:'trend',c:'chan'};
+  const map={v:'cursor',h:'h',f:'fib',b:'brush',e:'eraser',t:'trend',c:'chan',r:'rect'};
+  if(k==='l'){toggleLock();return;}
+  if((k==='delete'||k==='backspace')&&selD){e.preventDefault();deleteSel();return;}
   if(map[k]) setTool(map[k]);
   else if(k==='escape'){
     if(tool!=='cursor') setTool('cursor');
+    else if(selD) selectDrawing(null);
     else if(soloPanel) exitSolo();
     else if(state.calc.open) closeCalc();
   }
 });
 
-
-/* =================== INTERFAZ MÓVIL =================== */
-// Solo 1, 2 o 4 gráficas en el móvil
-if(![1,2,4].includes(state.layout)) state.layout=state.layout>=4?4:1;
-const mE=id=>document.getElementById(id);
-const TOOL_NAMES={cursor:'Cursor',h:'Horizontal',trend:'Tendencia',chan:'Canal',fib:'Fibonacci',brush:'Pincel',eraser:'Goma'};
-const TOOL_TIPS={
-  h:'Mueve la cruz y toca para fijar',
-  trend:'Punto 1: mueve la cruz y toca',
-  chan:'Punto 1: mueve la cruz y toca',
-  fib:'Inicio: mueve la cruz y toca',
-  brush:'Dibuja con el dedo',
-  eraser:'Toca un dibujo para borrarlo'
-};
-const curPanel=()=>(activePanel&&live().includes(activePanel))?activePanel:(live()[0]||null);
-
-// Mover los controles existentes a los paneles del móvil (conservan su funcionamiento)
-mE('swSlot').appendChild(mE('swatches'));
-mE('magSlot').appendChild(mE('magnet'));
-mE('slFibL').appendChild(mE('fibExtL'));
-mE('slFibR').appendChild(mE('fibExtR'));
-mE('slChL').appendChild(mE('chExtL'));
-mE('slChR').appendChild(mE('chExtR'));
-
-// Herramientas: reutilizo los iconos de la barra lateral
-const toolGrid=mE('toolGrid');
-['cursor','h','trend','chan','fib','brush','eraser'].forEach(t=>{
-  const src=document.querySelector('#tools button[data-tool="'+t+'"] svg');
-  const b=document.createElement('button');
-  b.type='button';b.dataset.tool=t;
-  b.innerHTML=(src?src.outerHTML:'')+'<span>'+TOOL_NAMES[t]+'</span>';
-  toolGrid.appendChild(b);
-});
-toolGrid.addEventListener('click',e=>{
-  const b=e.target.closest('button[data-tool]');if(!b) return;
-  closeSheets();setTool(b.dataset.tool);
-});
-const wGrid=mE('wGrid');
-[1,2,3,4].forEach(w=>{
-  const b=document.createElement('button');b.type='button';b.dataset.w=w;b.textContent=w+' px';wGrid.appendChild(b);
-});
-wGrid.addEventListener('click',e=>{
-  const b=e.target.closest('button[data-w]');if(!b) return;
-  state.width=+b.dataset.w;save();syncTools();
-});
-function syncTools(){
-  toolGrid.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool));
-  wGrid.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.w===state.width));
-}
-
-// Paneles inferiores
-const sheetBg=mE('sheetBg');
-function openSheet(id){
-  document.querySelectorAll('.sheet').forEach(x=>x.classList.toggle('on',x.id===id));
-  sheetBg.classList.add('on');
-}
-function closeSheets(){
-  document.querySelectorAll('.sheet').forEach(x=>x.classList.remove('on'));
-  sheetBg.classList.remove('on','light');
-  const a=document.activeElement;if(a&&a.blur) a.blur();
-}
-sheetBg.addEventListener('click',closeSheets);
-document.querySelectorAll('.sh-grab').forEach(g=>g.addEventListener('click',closeSheets));
-// cerrar deslizando hacia abajo desde el asa
-document.querySelectorAll('.sheet').forEach(sh=>{
-  let y0=null;
-  sh.addEventListener('touchstart',e=>{y0=(sh.scrollTop<=0)?e.touches[0].clientY:null;},{passive:true});
-  sh.addEventListener('touchmove',e=>{
-    if(y0==null) return;
-    const dy=e.touches[0].clientY-y0;
-    if(dy>0){sh.style.transition='none';sh.style.transform='translateY('+dy+'px)';}
-  },{passive:true});
-  sh.addEventListener('touchend',e=>{
-    if(y0==null) return;
-    const dy=e.changedTouches[0].clientY-y0;y0=null;
-    sh.style.transition='';sh.style.transform='';
-    if(dy>90) closeSheets();
-  });
-});
-
-// Par, temporalidad y mercado
-const tfGrid=mE('tfGrid');
-Object.keys(INTERVALS).forEach(iv=>{
-  const b=document.createElement('button');b.type='button';b.dataset.iv=iv;b.textContent=iv;tfGrid.appendChild(b);
-});
-tfGrid.addEventListener('click',e=>{
-  const b=e.target.closest('button[data-iv]');const p=curPanel();if(!b||!p) return;
-  p.setInterval_(b.dataset.iv);closeSheets();
-});
-mE('mktSeg').addEventListener('click',e=>{
-  const b=e.target.closest('button[data-m]');const p=curPanel();if(!b||!p) return;
-  if(p.cfg.market!==b.dataset.m) p.setMarket(b.dataset.m);
-  syncSymSheet();
-});
-const symSearch=mE('symSearch'),symList=mE('symList');
-const symKey=x=>String(x).toUpperCase().replace(/[^A-Z0-9]/g,'');
-function symOptions(){
-  const p=curPanel(),mk=p?p.cfg.market:'spot';
-  const id=mk==='td'?'#symlistT':mk==='hl'?'#symlistH':mk==='futures'?'#symlistF':'#symlist';
-  return Array.from(document.querySelectorAll(id+' option')).map(o=>o.value);
-}
-function renderSymList(){
-  const p=curPanel(),mk=p?p.cfg.market:'spot',q=symKey(symSearch.value);
-  let list=symOptions();
-  if(q) list=list.filter(x=>symKey(x).includes(q)).sort((a,b)=>(symKey(b).startsWith(q)?1:0)-(symKey(a).startsWith(q)?1:0));
-  list=list.slice(0,80);
-  if(q&&!list.length){const n=mk==='hl'?normalizeHL(symSearch.value):mk==='td'?normalizeTD(symSearch.value):normalizeSymbol(q);if(n) list=[n];}
-  symList.innerHTML='';
-  for(const sym of list){
-    const b=document.createElement('button');b.type='button';b.dataset.sym=sym;
-    const c=document.createElement('span');c.className='coin';setCoin(c,sym);
-    b.appendChild(c);b.appendChild(document.createTextNode(sym));
-    if(p&&p.cfg.symbol===sym) b.classList.add('on');
-    symList.appendChild(b);
-  }
-}
-function syncSymSheet(){
-  const p=curPanel();if(!p) return;
-  tfGrid.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.iv===p.cfg.interval));
-  mE('mktSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===p.cfg.market));
-  renderSymList();
-}
-symSearch.addEventListener('input',renderSymList);
-symSearch.addEventListener('keydown',e=>{
-  if(e.key!=='Enter') return;
-  const p=curPanel(),first=symList.querySelector('button[data-sym]');
-  const v=first?first.dataset.sym:symSearch.value;
-  if(p&&v){p.setSymbol(v);closeSheets();}
-});
-symList.addEventListener('click',e=>{
-  const b=e.target.closest('button[data-sym]');const p=curPanel();if(!b||!p) return;
-  p.setSymbol(b.dataset.sym);closeSheets();
-});
-mE('mPair').addEventListener('click',()=>{
-  symSearch.value='';syncSymSheet();openSheet('shSym');
-});
-
-// Botones de la barra
-mE('mDraw').addEventListener('click',()=>{syncTools();openSheet('shTools');});
-mE('mEye').addEventListener('click',()=>setHidden(!state.hideDrawings));
-mE('mLock').addEventListener('click',()=>{
-  state.lockDrawings=!state.lockDrawings;save();
-  live().forEach(p=>{p.hoverId=null;p.drag=null;p.dirty=true;});
-  mSync();
-  cpToast(state.lockDrawings?'Dibujos bloqueados':'Dibujos desbloqueados');
-});
-mE('mMore').addEventListener('click',()=>{syncMore();openSheet('shMore');});
-mE('mUndo').addEventListener('click',undo);
-mE('mToolX').addEventListener('click',()=>setTool('cursor'));
-
-function syncMore(){
-  const p=curPanel();
-  mE('layGrid').querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.n===state.layout));
-  mE('invSt').textContent=p&&p.cfg.inv?'Activado':'No';
-  mE('invSt').parentElement.classList.toggle('on',!!(p&&p.cfg.inv));
-  mE('fibSt').textContent=state.fibLevels.join('  ');
-}
-mE('layGrid').addEventListener('click',e=>{
-  const b=e.target.closest('button[data-n]');if(!b) return;
-  if(soloPanel) exitSolo();
-  state.layout=+b.dataset.n;save();buildGrid();syncMore();closeSheets();
-});
-mE('shMore').querySelector('.sh-list').addEventListener('click',e=>{
-  const b=e.target.closest('button[data-act]');if(!b) return;
-  const p=curPanel(),a=b.dataset.act;
-  if(a==='calc'){closeSheets();if(!state.calc.open) openCalc(false);}
-  else if(a==='fib'){closeSheets();setTimeout(()=>showFibPanel(true),60);}
-  else if(a==='td'){openTdSheet();}
-  else if(a==='inv'){if(p) p.invEl.click();syncMore();}
-  else if(a==='exp'){closeSheets();exportDrawings();}
-  else if(a==='imp'){closeSheets();mE('impFile').click();}
-  else if(a==='clear'){closeSheets();if(p) p.root.querySelector('.clr').click();}
-});
-
-// Sincronizar barra inferior y aviso de herramienta
-const ICON_EYE_M='<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-const ICON_EYE_OFF_M='<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.2 4"/><path d="M6.5 6.6A17 17 0 0 0 2 12s4 7 10 7a9.7 9.7 0 0 0 4.2-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
-function mSync(){
-  const p=curPanel(),pill=mE('mPair');
-  if(!pill) return;
-  if(p){
-    setCoin(pill.querySelector('.coin'),p.cfg.symbol);
-    pill.querySelector('.nm').textContent=p.cfg.symbol;
-    pill.querySelector('.tf').textContent=p.cfg.interval;
-    const mkEl=pill.querySelector('.mk'),mm=p.cfg.market;
-    mkEl.hidden=mm==='spot';mkEl.textContent=mm==='hl'?'HL':mm==='td'?'TD':'FUT';
-  }
-  const lk=mE('mLock');
-  lk.innerHTML=state.lockDrawings
-    ?'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>'
-    :'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 7.6-1.7"/></svg>';
-  lk.classList.toggle('on',!!state.lockDrawings);
-  lk.title=state.lockDrawings?'Desbloquear dibujos':'Bloquear dibujos';
-  const eye=mE('mEye');
-  eye.innerHTML=state.hideDrawings?ICON_EYE_OFF_M:ICON_EYE_M;
-  eye.classList.toggle('on',!!state.hideDrawings);
-}
-function mToolSync(){
-  const chip=mE('mTool');
-  mE('mDraw').classList.toggle('on',tool!=='cursor');
-  if(tool==='cursor'){chip.hidden=true;return;}
-  let tip=TOOL_TIPS[tool]||'';
-  const cp=curPanel(),pd=cp&&cp.pending;
-  if(pd){
-    if(tool==='fib') tip='Final: mueve la cruz y toca';
-    else if(tool==='trend') tip='Punto 2: mueve la cruz y toca';
-    else if(tool==='chan') tip=pd.stage===1?'Punto 2: mueve la cruz y toca':'Ancho: mueve la cruz y toca';
-  }
-  mE('mToolTxt').textContent=TOOL_NAMES[tool]+' · '+tip;
-  chip.hidden=false;
-}
-
-/* ---------- Medias móviles (EMA / SMA / HMA) de la gráfica activa ---------- */
+/* ---------- Opciones de las EMAs (una por gráfica) ---------- */
 const EMA_MAX=1000;
 
 // Media móvil ponderada (pesos 1..n) en O(n). Los null iniciales se saltan.
@@ -2771,27 +2562,21 @@ const EMA_DEFAULTS=[
   {on:false,t:'ema',len:50,color:'#d36bff',w:2},
   {on:false,t:'ema',len:200,color:'#ff5252',w:2}
 ];
-
-function mMaSync(){
-  const b=mE('mMA');if(!b) return;
-  const p=curPanel();
-  b.classList.toggle('on',!!(p&&p.cfg.emas&&p.cfg.emas.some(e=>e.on)));
-}
-const maRows=mE('maRows');
-let maTarget=null;
-function maBuildRows(){
-  maRows.innerHTML='';
-  const p=maTarget;if(!p) return;
-  mE('maSub').textContent=p.cfg.symbol+' · '+p.cfg.interval;
+const emaPanel=$('#emaPanel'),emaRows=$('#emaRows');
+let emaTarget=null;
+function emaBuildRows(){
+  emaRows.innerHTML='';
+  const p=emaTarget;if(!p) return;
+  $('#emaSub').textContent=p.cfg.symbol+' · '+p.cfg.interval;
   p.cfg.emas.forEach((e,i)=>{
     const row=document.createElement('div');
-    row.className='ma-row'+(e.on?'':' off');
-    row.innerHTML='<input type="checkbox" class="ma-sw" aria-label="Activar media '+(i+1)+'">'+
-      '<select class="ma-t" aria-label="Tipo de media">'+MA_TYPES.map(t=>'<option value="'+t[0]+'">'+t[1]+'</option>').join('')+'</select>'+
-      '<input type="number" class="ma-len" min="1" max="'+EMA_MAX+'" step="1" inputmode="numeric" aria-label="Periodo">'+
-      '<input type="color" aria-label="Color">'+
-      '<select class="ma-w" aria-label="Grosor"><option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option><option value="4">4 px</option></select>';
-    const [chk,typ,len,col,w]=row.children;
+    row.className='ema-row'+(e.on?'':' off');
+    row.innerHTML='<span class="nm">'+(i+1)+'</span><input type="checkbox" title="Activar o desactivar esta media">'+
+      '<select class="ma-t" title="Tipo de media">'+MA_TYPES.map(t=>'<option value="'+t[0]+'">'+t[1]+'</option>').join('')+'</select>'+
+      '<input type="number" class="ema-len" min="1" max="'+EMA_MAX+'" step="1" inputmode="numeric" title="Periodo">'+
+      '<input type="color" title="Color">'+
+      '<select class="ma-w" title="Grosor"><option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option><option value="4">4 px</option></select>';
+    const [,chk,typ,len,col,w]=row.children;
     chk.checked=e.on;typ.value=e.t;len.value=e.len;col.value=e.color;w.value=String(e.w);
     const upd=patch=>{Object.assign(e,patch);row.classList.toggle('off',!e.on);save();p.emaSetAll();};
     chk.addEventListener('change',()=>upd({on:chk.checked}));
@@ -2805,49 +2590,34 @@ function maBuildRows(){
     len.addEventListener('blur',()=>{len.value=e.len;len.classList.remove('bad');});
     col.addEventListener('input',()=>upd({color:col.value}));
     w.addEventListener('change',()=>upd({w:+w.value}));
-    maRows.appendChild(row);
+    emaRows.appendChild(row);
   });
 }
-mE('mMA').addEventListener('click',()=>{
-  const p=curPanel();if(!p) return;
-  maTarget=p;maBuildRows();
-  openSheet('shMA');sheetBg.classList.add('light');
-});
-mE('maReset').addEventListener('click',()=>{
-  const p=maTarget;if(!p) return;
+function showEmaPanel(p){
+  if(emaTarget&&emaTarget.emaBtn) emaTarget.emaBtn.classList.remove('on');
+  if(!p){emaPanel.hidden=true;emaTarget=null;return;}
+  emaTarget=p;
+  emaBuildRows();
+  emaPanel.hidden=false;
+  const r=p.emaBtn.getBoundingClientRect(),pw=emaPanel.offsetWidth,ph=emaPanel.offsetHeight;
+  let left=Math.min(Math.max(8,r.left),window.innerWidth-pw-8);
+  let top=r.bottom+6;
+  if(top+ph>window.innerHeight-8) top=Math.max(8,r.top-ph-6);
+  emaPanel.style.left=left+'px';emaPanel.style.top=top+'px';
+  p.emaBtn.classList.add('on');
+}
+function toggleEmaPanel(p){showEmaPanel(emaTarget===p&&!emaPanel.hidden?null:p);}
+$('#emaReset').addEventListener('click',()=>{
+  const p=emaTarget;if(!p) return;
   p.cfg.emas=EMA_DEFAULTS.map(d=>Object.assign({},d));
-  save();p.emaSetAll();maBuildRows();
+  save();p.emaSetAll();emaBuildRows();
 });
-
-/* ---------- Twelve Data: clave y opciones (hoja inferior) ---------- */
-function openTdSheet(){
-  mE('tdKey').value=tdKey();
-  mE('tdRef').value=String(tdRefreshMin());
-  mE('tdErr').textContent='';
-  tdStatus();
-  openSheet('shTD');
-}
-function saveTd(){
-  const k=mE('tdKey').value.trim();
-  if(!k){mE('tdErr').textContent='Pega tu clave primero.';return;}
-  const changed=k!==tdKey();
-  lsSet(TD_KEY_LS,k);
-  lsSet(TD_REF_LS,mE('tdRef').value);
-  if(changed) tdQ.cache.clear();
-  closeSheets();
-  // Recarga las gráficas de Twelve Data sin datos; al resto les aplica el nuevo ritmo de actualización
-  live().filter(p=>p.cfg.market==='td').forEach(p=>{
-    if(changed||!p.data.length) p.load();
-    else p.openPollTD(p.reqId);
-  });
-  tdStatus();
-  cpToast('Twelve Data guardado');
-}
-mE('tdSave').addEventListener('click',saveTd);
-mE('tdKey').addEventListener('keydown',e=>{if(e.key==='Enter') saveTd();});
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden) live().forEach(p=>{if(p.cfg.market==='td'&&p.data.length) p.pollTD(p.reqId);});
-});
+document.addEventListener('pointerdown',e=>{
+  if(emaPanel.hidden) return;
+  if(emaPanel.contains(e.target)||e.target.closest('.emab')) return;
+  showEmaPanel(null);
+},true);
+emaPanel.addEventListener('keydown',e=>{if(e.key==='Escape') showEmaPanel(null);});
 
 /* ---------- Arranque ---------- */
 function loop(){
@@ -2856,6 +2626,7 @@ function loop(){
 }
 syncOpts();
 syncHide();
+syncLock();
 buildGrid();
 setTool('cursor');
 setActive(panels[0]||null);
