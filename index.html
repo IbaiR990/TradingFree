@@ -2849,6 +2849,54 @@ document.addEventListener('visibilitychange',()=>{
   if(!document.hidden) live().forEach(p=>{if(p.cfg.market==='td'&&p.data.length) p.pollTD(p.reqId);});
 });
 
+/* ---------- iOS (app de inicio): recuperar el alto de pantalla al volver a la app ---------- */
+// A veces iOS deja el área visible más corta tras salir y entrar varias veces y aparece un hueco
+// bajo la barra inferior. Se detecta comparando con el alto máximo visto antes y se le pide a iOS
+// que recalcule el área visible.
+(function(){
+  const standalone=()=>navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+  const typing=()=>{const a=document.activeElement;return !!a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName);};
+  const orient=()=>window.innerWidth>window.innerHeight?'l':'p';
+  const hKey=()=>'cryptoGrid.vh.'+orient();
+  const known=()=>+lsGet(hKey())||0;
+  let busy=false,cool=0,timer=0;
+  function remember(){
+    if(!standalone()||typing()) return;
+    const h=Math.round(window.innerHeight);
+    if(h>known()) lsSet(hKey(),String(h));
+  }
+  const short=()=>standalone()&&!typing()&&known()>0&&window.innerHeight<known()-8;
+  function kick(){
+    const mv=document.querySelector('meta[name=viewport]');
+    if(!mv) return;
+    const orig=mv.getAttribute('content')||'';
+    mv.setAttribute('content',orig.replace('viewport-fit=cover','viewport-fit=auto'));
+    requestAnimationFrame(()=>{
+      mv.setAttribute('content',orig);
+      window.scrollTo(0,0);
+    });
+  }
+  function check(tries){
+    if(!short()){busy=false;return;}
+    kick();
+    if(tries>1) setTimeout(()=>check(tries-1),350);
+    else{busy=false;cool=Date.now()+5000;}
+  }
+  function run(){
+    remember();
+    if(busy||Date.now()<cool||!short()) return;
+    busy=true;check(3);
+  }
+  function soon(){clearTimeout(timer);timer=setTimeout(run,150);}
+  window.addEventListener('pageshow',soon);
+  window.addEventListener('focus',soon);
+  window.addEventListener('resize',soon);
+  window.addEventListener('orientationchange',()=>setTimeout(run,400));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){soon();setTimeout(run,600);}});
+  setTimeout(remember,800);
+  window.__vpFix={run,short,known};
+})();
+
 /* ---------- Arranque ---------- */
 function loop(){
   for(const p of panels) if(p) p.tick();
