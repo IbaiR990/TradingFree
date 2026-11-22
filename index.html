@@ -287,6 +287,27 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 #shTD a{color:#5b8def}
 #shTD select.sh-input{appearance:none;-webkit-appearance:none}
 .ma-row input[type=color]{width:40px;height:40px;padding:3px;border:0;border-radius:10px;background:#2a2d37;cursor:pointer}
+
+/* Selección de dibujos y favoritos */
+#mSel{position:fixed;top:calc(var(--st) + 8px);left:50%;transform:translateX(-50%);z-index:45;display:flex;align-items:center;gap:6px;padding:5px 5px 5px 14px;border-radius:999px;background:#2a2d37;border:1px solid #3b4c66;color:var(--text);font-size:14px;max-width:calc(100% - 20px);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+#mSel span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+#mSel button{flex-shrink:0;height:30px;border-radius:15px;border:0;background:rgba(255,255,255,.1);color:var(--text);display:grid;place-items:center;padding:0 12px;font:600 13px system-ui,sans-serif}
+#mSel button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#mSel #mSelDel,#mSel #mSelX{width:30px;padding:0}
+#mSel #mSelDel{color:#ff8a80}
+.sel-sw{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.sel-sw .sw{width:36px;height:36px;border-width:3px}
+.sel-sw .sw.on{border-color:#5b8def;box-shadow:0 0 0 2px #fff inset}
+.sel-sw input[type=color]{width:36px;height:36px;padding:2px;border:0;border-radius:50%;background:#2a2d37}
+.sel-range{width:100%;accent-color:#5b8def}
+.fav-bar{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;margin-top:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.fav-bar::-webkit-scrollbar{display:none}
+.fav-chip{flex:0 0 auto;display:flex;align-items:center;gap:6px;background:#2a2d37;border:1px solid transparent;color:var(--text);border-radius:18px;padding:0 4px 0 12px;height:36px;font:600 14px system-ui,sans-serif;cursor:pointer}
+.fav-chip.on{border-color:#5b8def;color:#5b8def}
+.fav-chip .tg{font:700 10px var(--mono);color:#f5c518}
+.fav-chip .x{width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px}
+.fav-star{margin-left:auto;padding:6px 8px;font-size:22px;line-height:1;color:#5f6675}
+.fav-star.on{color:#f5c518}
 </style>
 </head>
 <body>
@@ -318,6 +339,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
       <button data-tool="trend" title="Línea de tendencia (T)"><svg viewBox="0 0 24 24"><path d="M3 20L21 5"/><circle cx="7" cy="16.7" r="2"/><circle cx="14.5" cy="10.4" r="2"/></svg></button>
       <button data-tool="chan" title="Canal paralelo (C)"><svg viewBox="0 0 24 24"><path d="M3 14L17 3M7 21L21 10"/><path d="M5 17.5L19 6.5" stroke-dasharray="1.5 2.6"/></svg></button>
       <button data-tool="fib" title="Fibonacci (F)"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 10h18M3 15h18M3 20h18"/><path d="M6 19L18 6" stroke-dasharray="2 2.5"/></svg></button>
+      <button data-tool="rect" title="Rectángulo (R)"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" style="fill:currentColor;fill-opacity:.18"/><circle cx="4" cy="6" r="1.9" style="fill:#12161d"/><circle cx="20" cy="18" r="1.9" style="fill:#12161d"/></svg></button>
       <button data-tool="brush" title="Pincel (B)"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></svg></button>
       <button data-tool="eraser" title="Goma de borrar (E)"><svg viewBox="0 0 24 24"><path d="M8 20h11"/><path d="M5 15l9-9 5 5-6 6H9z"/></svg></button>
       <button id="hideBtn" title="Ocultar dibujos" style="margin-top:auto"></button>
@@ -326,6 +348,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
   </div>
 </div>
 
+<div id="mSel" hidden><span id="mSelTxt"></span><button type="button" id="mSelEdit">Editar</button><button type="button" id="mSelDel" title="Borrar" aria-label="Borrar"><svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5"/></svg></button><button type="button" id="mSelX" title="Cerrar" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <div id="mTool" hidden><span id="mToolTxt"></span><button type="button" id="mToolX" title="Cancelar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <button id="mUndo" type="button" title="Deshacer"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
 <div id="mbar">
@@ -342,6 +365,8 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 <div class="sheet" id="shSym">
   <div class="sh-grab"></div>
   <input id="symSearch" class="sh-input" placeholder="Buscar par: BTC, SOL, PEPE…" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+  <div class="sh-sec" id="favSec" hidden>Favoritos</div>
+  <div class="fav-bar" id="favBar" hidden></div>
   <div class="sh-sec">Temporalidad</div>
   <div class="sh-grid" id="tfGrid"></div>
   <div class="sh-seg" id="mktSeg"><button type="button" data-m="spot">Spot</button><button type="button" data-m="futures">Futuros</button><button type="button" data-m="hl">Hyperliquid</button><button type="button" data-m="td">Twelve Data</button></div>
@@ -357,12 +382,34 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
   <div class="sh-grid" id="wGrid"></div>
   <div class="sh-list"><label class="sh-tog"><span>Imán (pega a máximos y mínimos)</span><span id="magSlot"></span></label></div>
 </div>
+<div class="sheet" id="shSel">
+  <div class="sh-grab"></div>
+  <div class="sh-sec" style="margin-top:4px" id="selTitle">Dibujo</div>
+  <div id="selStyle">
+    <div class="sh-sec">Color</div>
+    <div class="sel-sw" id="selSw"></div>
+    <div class="sh-sec">Grosor</div>
+    <div class="sh-grid" id="selW"></div>
+  </div>
+  <div id="selRect">
+    <div class="sh-sec">Color de relleno</div>
+    <div class="sel-sw" id="rpSws"><input type="color" id="rpColor" aria-label="Otro color"></div>
+    <div class="sh-sec">Opacidad del relleno <b id="rpOpV">20 %</b></div>
+    <input type="range" id="rpOp" class="sel-range" min="0" max="100" step="5">
+    <div class="sh-list" style="margin-top:10px">
+      <label class="sh-tog"><span>Extender a la izquierda</span><input type="checkbox" id="rpExtL"></label>
+      <label class="sh-tog"><span>Extender a la derecha</span><input type="checkbox" id="rpExtR"></label>
+    </div>
+  </div>
+  <div class="sh-list" id="selDelRow" style="margin-top:6px"><button type="button" id="selDel"><span style="color:#ff8a80">Borrar dibujo</span></button></div>
+</div>
 <div class="sheet" id="shMore">
   <div class="sh-grab"></div>
   <div class="sh-sec" style="margin-top:4px">Gráficas en pantalla</div>
   <div class="sh-grid" id="layGrid" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-n="1">1</button><button type="button" data-n="2">2</button><button type="button" data-n="4">4</button></div>
   <div class="sh-list">
     <button type="button" data-act="calc"><span>Calculadora de riesgo</span></button>
+    <button type="button" data-act="rect"><span>Rectángulo: relleno y opacidad</span></button>
     <button type="button" data-act="fib"><span>Niveles de Fibonacci</span><span class="st" id="fibSt"></span></button>
     <button type="button" data-act="td"><span>Twelve Data (clave)</span><span class="st" id="tdSt"></span></button>
     <button type="button" data-act="inv"><span>Invertir eje de precios</span><span class="st" id="invSt"></span></button>
@@ -370,7 +417,7 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
     <button type="button" data-act="imp"><span>Importar dibujos</span></button>
     <button type="button" data-act="clear" class="danger"><span>Borrar dibujos de este par</span></button>
   </div>
-  <div class="sh-sec">Extender Fibonacci</div>
+  <div class="sh-sec">Extender Fibonacci (el seleccionado o los nuevos)</div>
   <div class="sh-list">
     <label class="sh-tog"><span>Hacia la izquierda</span><span id="slFibL"></span></label>
     <label class="sh-tog"><span>Hacia la derecha</span><span id="slFibR"></span></label>
@@ -434,9 +481,9 @@ html,body{height:100%;height:100dvh;-webkit-text-size-adjust:100%;background:#13
 </div>
 <div id="cpToast"></div>
 <div id="fibPanel" hidden>
-  <div class="fp-title">Niveles de Fibonacci</div>
+  <div class="fp-title" id="fpTitle">Niveles de Fibonacci</div>
   <input type="text" id="fibInput" spellcheck="false" autocomplete="off">
-  <div class="fp-help">Separa los valores con espacios. Puedes usar negativos y mayores que 1 (extensiones). Se aplica a todos los Fibonacci.</div>
+  <div class="fp-help" id="fpHelp"></div>
   <div class="fp-ext">
     <span>Extender líneas:</span>
     <label class="chk"><input type="checkbox" id="fibExtL"> Izquierda</label>
@@ -470,7 +517,7 @@ if(typeof LightweightCharts==='undefined'){
 }
 
 /* ---------- Configuración ---------- */
-const INTERVALS={'1m':60,'5m':300,'15m':900,'30m':1800, '1h':3600, '2h':7200, '4h':14400,'1d':86400,'1w':604800,'1M':2592000,'3M':7776000,'12M':31536000};
+const INTERVALS={'1m':60,'5m':300,'15m':900,'30m':1800, '1h':3600, '2h':7200, '4h':14400,'8h':28800,'12h':43200,'1d':86400,'1w':604800,'1M':2592000,'3M':7776000,'12M':31536000};
 // Binance no ofrece 3 ni 12 meses: se construyen agrupando velas mensuales (trimestres y años naturales, UTC)
 const AGG={'3M':3,'12M':12};
 function groupStart(t,iv){
@@ -621,6 +668,7 @@ const HINTS={
   cursor:'Arrastra para mover la gráfica. Arrastra un dibujo para moverlo.',
   h:'Haz clic donde quieras la línea. Con el imán se pega a máximos y mínimos (Ctrl lo invierte).',
   fib:'Haz clic en el punto inicial y luego en el final (o arrastra).',
+  rect:'Haz clic en una esquina y luego en la opuesta (o arrastra).',
   trend:'Haz clic en dos puntos (o arrastra). La línea se alarga hacia la derecha.',
   chan:'Clic 1 y 2: línea base. Clic 3: ancho del canal.',
   brush:'Mantén pulsado y dibuja. Esc para volver al cursor.',
@@ -685,6 +733,35 @@ function loadState(){
 }
 const state=loadState();
 if(!state.calc||typeof state.calc!=='object') state.calc={open:false,x:null,y:null,risk:''};
+if(!state.rect||typeof state.rect!=='object') state.rect={};
+state.rect=Object.assign({fill:'#4da3ff',fo:0.2,extL:false,extR:false},state.rect);
+if(!Array.isArray(state.favs)) state.favs=[];
+// Dibujo seleccionado: {key,id}
+let selD=null;
+function selObj(type){
+  if(!selD) return null;
+  const d=(state.drawings[selD.key]||[]).find(x=>x.id===selD.id)||null;
+  return d&&(!type||d.type===type)?d:null;
+}
+const selRectObj=()=>selObj('rect');
+const selFibObj=()=>selObj('fib');
+// Cada Fibonacci guarda sus propios niveles y extensiones. Los antiguos se quedan con los niveles que tenías.
+function fixFib(d){
+  if(!d||d.type!=='fib') return;
+  if(!Array.isArray(d.levels)||d.levels.length<2) d.levels=state.fibLevels.slice();
+  if(d.extL==null) d.extL=!!state.fibExtL;
+  if(d.extR==null) d.extR=!!state.fibExt;
+}
+for(const k of Object.keys(state.drawings)) (state.drawings[k]||[]).forEach(fixFib);
+const fibStyle=()=>({levels:state.fibLevels.slice(),extL:!!state.fibExtL,extR:!!state.fibExt});
+function selectDrawing(v){
+  selD=v;
+  if(typeof syncRectPanel==='function') syncRectPanel();
+  if(typeof syncFibPanel==='function') syncFibPanel();
+  if(typeof mSelSync==='function') mSelSync();
+  live().forEach(p=>p.dirty=true);
+}
+const rectStyle=()=>({fill:state.rect.fill,fo:state.rect.fo,extL:!!state.rect.extL,extR:!!state.rect.extR});
 let saveTimer=null;
 function save(){
   clearTimeout(saveTimer);
@@ -701,13 +778,13 @@ let tool='cursor';
 let soloPanel=null;
 let activePanel=null;
 
-function invalidateAll(){live().forEach(p=>p.dirty=true);save();}
+function invalidateAll(){live().forEach(p=>p.dirty=true);save();if(typeof mSelSync==='function') mSelSync();}
 function addDrawing(sym,d){
   d.id=Math.random().toString(36).slice(2,9);
   drawingsOf(sym).push(d);
   invalidateAll();
 }
-const CROSS_TOOLS=new Set(['h','trend','chan','fib']);
+const CROSS_TOOLS=new Set(['h','trend','chan','fib','rect']);
 const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 function fmtCrossTime(t,iv){
   const d=new Date(t*1000),dd=d.getDate()+' '+MESES[d.getMonth()];
@@ -1080,17 +1157,23 @@ class Panel{
   setMsg(t,err){this.msgEl.textContent=t||'';this.msgEl.className='msg'+(err?' err':'');}
 
   // Cambia de mercado recordando el último par de cada familia (Binance, Hyperliquid, Twelve Data)
-  setMarket(mk){
+  setMarket(mk,sym){
     const c=this.cfg,cur=c.market;
-    if(mk===cur) return;
+    if(mk===cur&&!sym) return;
     const bn=x=>x==='spot'||x==='futures';
     const slot=x=>x==='hl'?'hlSymbol':x==='td'?'tdSymbol':'bnSymbol';
-    if(!(bn(cur)&&bn(mk))){
+    if(mk!==cur&&!(bn(cur)&&bn(mk))){
       c[slot(cur)]=c.symbol;
       c.symbol=c[slot(mk)]||(mk==='hl'?HL_DEFAULT:mk==='td'?TD_DEFAULT:'BTCUSDT');
     }
+    if(sym) c.symbol=sym;
     c.market=mk;
     save();this.syncHeader();this.load();
+  }
+  // Va a un par concreto de cualquier mercado (usado por los favoritos)
+  goTo(mk,sym){
+    if(mk===this.cfg.market) this.setSymbol(sym);
+    else this.setMarket(mk,sym);
   }
   setSymbol(raw){
     const mk=this.cfg.market;
@@ -1507,7 +1590,7 @@ class Panel{
     const x1=this.xOf(d.p1.t),x2=this.xOf(d.p2.t),y1=this.yOf(d.p1.p),y2=this.yOf(d.p2.p);
     if(x1==null||x2==null||y1==null||y2==null) return null;
     const levels=[];
-    for(const lv of state.fibLevels){
+    for(const lv of (d.levels||state.fibLevels)){
       const price=d.p2.p+(d.p1.p-d.p2.p)*lv;
       const y=this.yOf(price);
       if(y!=null) levels.push({lv,price,y});
@@ -1545,6 +1628,23 @@ class Panel{
     const bp=this.pOf(by);
     return bp==null?0:q.p-bp;
   }
+  rectGeom(d,ps){
+    const x1=this.xOf(d.p1.t),x2=this.xOf(d.p2.t),y1=this.yOf(d.p1.p),y2=this.yOf(d.p2.p);
+    if(x1==null||x2==null||y1==null||y2==null) return null;
+    const w=(ps||this.paneSize()).w;
+    let L=Math.min(x1,x2),R=Math.max(x1,x2);
+    if(d.extL) L=Math.min(L,-2);
+    if(d.extR) R=Math.max(R,w+2);
+    return{x1,x2,y1,y2,L,R,T:Math.min(y1,y2),B:Math.max(y1,y2)};
+  }
+  // Tiradores: 4 esquinas y 4 puntos medios de los lados
+  rectHandles(g){
+    const xm=(g.x1+g.x2)/2,ym=(g.y1+g.y2)/2;
+    return[
+      ['a',g.x1,g.y1],['b',g.x2,g.y2],['c',g.x1,g.y2],['d',g.x2,g.y1],
+      ['x1',g.x1,ym],['x2',g.x2,ym],['y1',xm,g.y1],['y2',xm,g.y2]
+    ];
+  }
   hit(x,y){
     if(state.hideDrawings) return null;
     const list=drawingsOf(this.key);
@@ -1565,8 +1665,8 @@ class Panel{
         if(Math.hypot(x-g.x1,y-g.y1)<=9*k) return{d,part:'p1'};
         if(Math.hypot(x-g.x2,y-g.y2)<=9*k) return{d,part:'p2'};
         if(segDist(x,y,g.x1,g.y1,g.x2,g.y2)<=6*k) return{d,part:'body'};
-        const xr=state.fibExt?Infinity:g.xr+6*k;
-        if((state.fibExtL||x>=g.xl-6*k)&&x<=xr){
+        const xr=d.extR?Infinity:g.xr+6*k;
+        if((d.extL||x>=g.xl-6*k)&&x<=xr){
           for(const l of g.levels) if(Math.abs(l.y-y)<=6*k) return{d,part:'body'};
         }
       }else if(d.type==='trend'){
@@ -1575,6 +1675,16 @@ class Panel{
         if(Math.hypot(x-g.x2,y-g.y2)<=9*k) return{d,part:'p2'};
         const[a,b]=extLine({x:g.x1,y:g.y1},{x:g.x2,y:g.y2},false,true,this.paneSize().w);
         if(segDist(x,y,a.x,a.y,b.x,b.y)<=Math.max(6,d.w/2+3)*k) return{d,part:'body'};
+      }else if(d.type==='rect'){
+        const g=this.rectGeom(d);if(!g) continue;
+        for(const[part,hx,hy] of this.rectHandles(g)) if(Math.hypot(x-hx,y-hy)<=9*k) return{d,part};
+        const tol=Math.max(6,d.w/2+3)*k;
+        if(x>=g.L-tol&&x<=g.R+tol&&y>=g.T-tol&&y<=g.B+tol){
+          const edge=Math.abs(y-g.T)<=tol||Math.abs(y-g.B)<=tol||
+            (!d.extL&&Math.abs(x-g.L)<=tol)||(!d.extR&&Math.abs(x-g.R)<=tol);
+          // con el dedo solo se agarra por el borde, para poder mover la gráfica por dentro
+          if(edge||(d.fo>0&&!this.touch)) return{d,part:'body'};
+        }
       }else if(d.type==='chan'){
         const g=this.chanGeom(d);if(!g) continue;
         for(const[part,hx,hy] of this.chanHandles(g)) if(Math.hypot(x-hx,y-hy)<=9*k) return{d,part};
@@ -1602,6 +1712,9 @@ class Panel{
 
     if(tool==='cursor'){
       const h=state.lockDrawings?null:this.hit(x,y);
+      // tocar un dibujo lo selecciona; tocar un hueco vacío (sin arrastrar) lo deselecciona
+      if(h&&!(selD&&selD.id===h.d.id)) selectDrawing({key:sym,id:h.d.id});
+      this.tapDesel=(!h&&selD)?{x,y}:null;
       const l=this.xToL(x),pt=this.pt(x,y);
       if(h&&l!=null&&pt){
         consume=true;
@@ -1622,7 +1735,7 @@ class Panel{
       if(pt){
         if(!this.pending){
           this.pending={p1:pt,x0:x,y0:y,down:true,stage:1};
-          this.preview=tool==='fib'?{type:'fib',p1:pt,p2:pt,color:state.color}:{type:'trend',seg:tool==='chan',p1:pt,p2:pt,color:state.color,w:state.width};
+          this.preview=this.newPreview(pt);
         }else if(this.touch){
           // en el móvil: al tocar se ve la vista previa, puedes deslizar el dedo y se fija al soltar
           this.pending.fin=true;this.snapMark=sp.mark;this.updPreview(pt);this.dirty=true;
@@ -1666,6 +1779,13 @@ class Panel{
   }
   onUp(e){
     if(CROSS_TOOLS.has(tool)){this.crossUp(e);return;}
+    if(this.tapDesel){
+      const td0=this.tapDesel;this.tapDesel=null;
+      if(e.type==='pointerup'&&selD){
+        const q=this.pos(e);
+        if(Math.hypot(q.x-td0.x,q.y-td0.y)<8) selectDrawing(null);
+      }
+    }
     const dr=this.drag;this.drag=null;
     if(dr){
       if(dr.kind==='move'){this.snapMark=null;this.dirty=true;if(dr.moved) save();}
@@ -1757,7 +1877,7 @@ class Panel{
     }
     if(!this.pending){
       this.pending={p1:pt,stage:1};
-      this.preview=tool==='fib'?{type:'fib',p1:pt,p2:pt,color:state.color}:{type:'trend',seg:tool==='chan',p1:pt,p2:pt,color:state.color,w:state.width};
+      this.preview=this.newPreview(pt);
       this.dirty=true;
     }else{
       this.nextPoint(pt);
@@ -1802,21 +1922,35 @@ class Panel{
     const last=sp.length-1;
     return sp.map((q,i)=>(i===0||i===last)?pts[i]:(this.pt(q.x,q.y)||pts[i]));
   }
+  newPreview(pt){
+    if(tool==='fib') return Object.assign({type:'fib',p1:pt,p2:pt,color:state.color},fibStyle());
+    if(tool==='rect') return Object.assign({type:'rect',p1:pt,p2:pt,color:state.color,w:state.width},rectStyle());
+    return{type:'trend',seg:tool==='chan',p1:pt,p2:pt,color:state.color,w:state.width};
+  }
   updPreview(pt){
     if(!this.pending||!this.preview) return;
-    if(tool==='fib') this.preview={type:'fib',p1:this.pending.p1,p2:pt,color:state.color};
-    else if(tool==='trend'||this.pending.stage===1) this.preview.p2=pt;
+    if(tool==='fib') this.preview=Object.assign({type:'fib',p1:this.pending.p1,p2:pt,color:state.color},fibStyle());
+    else if(tool==='trend'||tool==='rect'||this.pending.stage===1) this.preview.p2=pt;
     else this.preview.off=this.chanOff(this.pending.p1,this.pending.p2,pt);
   }
   nextPoint(pt){
     if(tool==='fib') this.finishFib(pt);
     else if(tool==='trend') this.finishTrend(pt);
+    else if(tool==='rect') this.finishRect(pt);
     else if(this.pending.stage===1) this.chanSecond(pt);
     else this.finishChan(pt);
   }
   finishFib(p2){
-    addDrawing(this.key,{type:'fib',p1:this.pending.p1,p2,color:state.color});
+    const d=Object.assign({type:'fib',p1:this.pending.p1,p2,color:state.color},fibStyle());
+    addDrawing(this.key,d);
     setTool('cursor');
+    selectDrawing({key:this.key,id:d.id});
+  }
+  finishRect(p2){
+    const d=Object.assign({type:'rect',p1:this.pending.p1,p2,color:state.color,w:state.width},rectStyle());
+    addDrawing(this.key,d);
+    setTool('cursor');
+    selectDrawing({key:this.key,id:d.id});
   }
   finishTrend(p2){
     addDrawing(this.key,{type:'trend',p1:this.pending.p1,p2,color:state.color,w:state.width});
@@ -1879,6 +2013,22 @@ class Panel{
         else if(dr.part==='p2') d.p2=s?s.pt:pt;
         else{d.p1=shift(o.p1);d.p2=shift(o.p2);}
       }
+      else if(d.type==='rect'){
+        const P=dr.part;
+        if(P==='body'){d.p1=shift(o.p1);d.p2=shift(o.p2);}
+        else{
+          const q=s?s.pt:pt,p1={t:o.p1.t,p:o.p1.p},p2={t:o.p2.t,p:o.p2.p};
+          if(P==='a'){p1.t=q.t;p1.p=q.p;}
+          else if(P==='b'){p2.t=q.t;p2.p=q.p;}
+          else if(P==='c'){p1.t=q.t;p2.p=q.p;}
+          else if(P==='d'){p2.t=q.t;p1.p=q.p;}
+          else if(P==='x1') p1.t=q.t;
+          else if(P==='x2') p2.t=q.t;
+          else if(P==='y1') p1.p=q.p;
+          else if(P==='y2') p2.p=q.p;
+          d.p1=p1;d.p2=p2;
+        }
+      }
       else if(d.type==='chan'){
         const q=s?s.pt:pt;
         if(dr.part==='p1') d.p1=q;
@@ -1900,7 +2050,7 @@ class Panel{
   }
   setCursor(h){
     const c=this.body.classList;
-    c.toggle('cur-cross',tool==='h'||tool==='fib'||tool==='brush'||tool==='trend'||tool==='chan');
+    c.toggle('cur-cross',tool==='h'||tool==='fib'||tool==='brush'||tool==='trend'||tool==='chan'||tool==='rect');
     c.toggle('cur-move',tool==='cursor'&&!!h);
     c.toggle('cur-del',tool==='eraser');
   }
@@ -1923,7 +2073,7 @@ class Panel{
     const list=state.hideDrawings?[]:drawingsOf(this.key);
     ctx.save();
     ctx.beginPath();ctx.rect(0,0,ps.w,ps.h);ctx.clip();
-    for(const d of list) this.drawOne(ctx,d,ps,d.id===this.hoverId);
+    for(const d of list) this.drawOne(ctx,d,ps,d.id===this.hoverId||(!!selD&&d.id===selD.id));
     if(this.preview) this.drawOne(ctx,this.preview,ps,true);
     if(this.snapMark&&!(CROSS_TOOLS.has(tool)&&this.cross)){
       ctx.setLineDash([]);ctx.lineWidth=1.5;
@@ -1973,7 +2123,7 @@ class Panel{
       ctx.stroke();
     }else if(d.type==='fib'){
       const g=this.fibGeom(d);if(!g||!g.levels.length) return;
-      const xl=state.fibExtL?Math.min(0,g.xl):g.xl,xr=state.fibExt?Math.max(ps.w,g.xr):g.xr;
+      const xl=d.extL?Math.min(0,g.xl):g.xl,xr=d.extR?Math.max(ps.w,g.xr):g.xr;
       ctx.font='11px ui-monospace,Consolas,monospace';
       ctx.textAlign='left';ctx.textBaseline='bottom';
       for(const l of g.levels){
@@ -1994,6 +2144,13 @@ class Panel{
       ctx.strokeStyle=d.color;ctx.lineWidth=d.w+(hot?1:0);
       ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
       if(hot) this.drawHandles(ctx,[[g.x1,g.y1],[g.x2,g.y2]],[]);
+    }else if(d.type==='rect'){
+      const g=this.rectGeom(d,ps);if(!g) return;
+      const w=g.R-g.L,h=g.B-g.T;
+      if(d.fo>0){ctx.fillStyle=hexToRgba(d.fill||d.color,d.fo);ctx.fillRect(g.L,g.T,w,h);}
+      ctx.strokeStyle=d.color;ctx.lineWidth=d.w+(hot?1:0);ctx.lineJoin='miter';
+      ctx.strokeRect(g.L,g.T,w,h);
+      if(hot) this.drawHandles(ctx,this.rectHandles(g).map(q=>[q[1],q[2]]),[]);
     }else if(d.type==='chan'){
       const g=this.chanGeom(d);if(!g) return;
       ctx.strokeStyle=d.color;ctx.lineWidth=d.w+(hot?1:0);
@@ -2019,6 +2176,7 @@ class Panel{
 /* ---------- Herramientas y barra superior ---------- */
 function setTool(t){
   tool=t;
+  if(t!=='cursor'&&selD) selectDrawing(null);
   document.querySelectorAll('#tools button[data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===t));
   if(t!=='cursor'&&state.hideDrawings) setHidden(false);
   $('#hint').textContent=HINTS[t]||'';
@@ -2151,14 +2309,16 @@ const swWrap=$('#swatches');
 SWATCHES.forEach(c=>{
   const b=document.createElement('button');
   b.className='sw';b.style.background=c;b.dataset.c=c;b.title='Color';
-  b.addEventListener('click',()=>{state.color=c;save();syncOpts();});
+  b.addEventListener('click',()=>{
+    state.color=c;
+    const r=selRectObj();if(r) r.color=c;
+    invalidateAll();syncOpts();
+  });
   swWrap.appendChild(b);
 });
 function syncOpts(){
   swWrap.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b.dataset.c===state.color));
   $('#width').value=String(state.width);
-  $('#fibExtR').checked=!!state.fibExt;
-  $('#fibExtL').checked=!!state.fibExtL;
   $('#magnet').checked=!!state.magnet;
   $('#chExtL').checked=!!state.chExtL;
   $('#chExtR').checked=!!state.chExtR;
@@ -2181,8 +2341,6 @@ document.addEventListener('pointerdown',e=>{
 },true);
 $('#width').addEventListener('change',e=>{state.width=+e.target.value;save();});
 $('#magnet').addEventListener('change',e=>{state.magnet=e.target.checked;save();});
-$('#fibExtR').addEventListener('change',e=>{state.fibExt=e.target.checked;invalidateAll();});
-$('#fibExtL').addEventListener('change',e=>{state.fibExtL=e.target.checked;invalidateAll();});
 
 /* ---------- Calculadora de riesgo flotante ---------- */
 const calcPanel=$('#calcPanel'),calcBtn=$('#calcBtn');
@@ -2386,14 +2544,35 @@ function parseLevels(text){
   }
   return Array.from(new Set(out)).sort((a,b)=>a-b);
 }
-function applyLevels(list){
-  state.fibLevels=list;
+// Con un Fibonacci seleccionado, los cambios van solo a ese. Si no, a los que dibujes a partir de ahora.
+function applyFib(patch){
+  const f=selFibObj();
+  if(f){
+    if(patch.levels) f.levels=patch.levels.slice();
+    if('extL' in patch) f.extL=patch.extL;
+    if('extR' in patch) f.extR=patch.extR;
+  }else{
+    if(patch.levels) state.fibLevels=patch.levels.slice();
+    if('extL' in patch) state.fibExtL=patch.extL;
+    if('extR' in patch) state.fibExt=patch.extR;
+  }
   invalidateAll();
+  syncFibPanel();
+}
+function syncFibPanel(){
+  const f=selFibObj();
+  mE('fpTitle').textContent=f?'Fibonacci seleccionado':'Fibonacci (nuevos)';
+  mE('fpHelp').textContent='Separa los valores con espacios. Admite negativos y mayores que 1. '+(f
+    ?'Los cambios solo afectan a este Fibonacci.'
+    :'Se aplican a los Fibonacci que dibujes a partir de ahora. Toca uno para editar solo ese.');
+  fibInput.value=(f?f.levels:state.fibLevels).join(' ');
+  $('#fibExtL').checked=f?!!f.extL:!!state.fibExtL;
+  $('#fibExtR').checked=f?!!f.extR:!!state.fibExt;
+  fibErr.textContent='';
 }
 function showFibPanel(show){
   if(show){
-    fibInput.value=state.fibLevels.join(' ');
-    fibErr.textContent='';
+    syncFibPanel();
     const r=fibBtn.getBoundingClientRect();
     fibPanel.style.top=(r.bottom+6)+'px';
     fibPanel.style.right=Math.max(8,window.innerWidth-r.right)+'px';
@@ -2409,8 +2588,10 @@ function submitLevels(){
   const list=parseLevels(fibInput.value);
   if(!list||list.length<2){fibErr.textContent='Escribe al menos 2 números válidos.';return;}
   if(list.length>30){fibErr.textContent='Máximo 30 niveles.';return;}
-  applyLevels(list);
+  const one=!!selFibObj();
+  applyFib({levels:list});
   showFibPanel(false);
+  cpToast(one?'Niveles aplicados a este Fibonacci':'Niveles guardados para los nuevos Fibonacci');
 }
 fibBtn.addEventListener('click',()=>showFibPanel(fibPanel.hidden));
 $('#fibApply').addEventListener('click',submitLevels);
@@ -2421,10 +2602,10 @@ fibInput.addEventListener('keydown',e=>{
 fibPanel.addEventListener('click',e=>{
   const b=e.target.closest('button[data-preset]');
   if(!b) return;
-  applyLevels(FIB_PRESETS[b.dataset.preset].slice());
-  fibInput.value=state.fibLevels.join(' ');
-  fibErr.textContent='';
+  applyFib({levels:FIB_PRESETS[b.dataset.preset]});
 });
+$('#fibExtL').addEventListener('change',e=>applyFib({extL:e.target.checked}));
+$('#fibExtR').addEventListener('change',e=>applyFib({extR:e.target.checked}));
 document.addEventListener('pointerdown',e=>{
   if(!fibPanel.hidden&&!fibPanel.contains(e.target)&&e.target!==fibBtn) showFibPanel(false);
 },true);
@@ -2451,7 +2632,7 @@ function drawingsCSV(){
       if(d.type==='brush') pts=(d.pts||[]).slice().sort((a,b)=>a.t-b.t);
       else if(d.type==='fib') pts=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
       else if(d.type==='h') pts=[{t:d.t,p:d.price}];
-      else if(d.type==='trend') pts=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
+      else if(d.type==='trend'||d.type==='rect') pts=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
       else if(d.type==='chan'){
         // base inicio, paralela inicio, paralela fin, base fin (inicio/fin = línea base)
         const[b1,b2]=[d.p1,d.p2].sort((a,b)=>a.t-b.t);
@@ -2483,9 +2664,10 @@ function importDrawings(obj){
     if(!Array.isArray(src[key])) continue;
     const list=drawingsOf(key),ids=new Set(list.map(d=>d.id));
     for(const d of src[key]){
-      if(!d||!/^(brush|fib|h|trend|chan)$/.test(d.type)){skipped++;continue;}
+      if(!d||!/^(brush|fib|h|trend|chan|rect)$/.test(d.type)){skipped++;continue;}
       if(d.id&&ids.has(d.id)){skipped++;continue;}
       const c=JSON.parse(JSON.stringify(d));
+      fixFib(c);
       if(!c.id) c.id=Math.random().toString(36).slice(2,9);
       list.push(c);ids.add(c.id);added++;
     }
@@ -2520,10 +2702,12 @@ window.addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
   if((e.ctrlKey||e.metaKey)&&k==='z'){e.preventDefault();undo();return;}
   if(e.ctrlKey||e.metaKey||e.altKey) return;
-  const map={v:'cursor',h:'h',f:'fib',b:'brush',e:'eraser',t:'trend',c:'chan'};
+  const map={v:'cursor',h:'h',f:'fib',b:'brush',e:'eraser',t:'trend',c:'chan',r:'rect'};
+  if((k==='delete'||k==='backspace')&&selD){e.preventDefault();deleteSel();return;}
   if(map[k]) setTool(map[k]);
   else if(k==='escape'){
     if(tool!=='cursor') setTool('cursor');
+    else if(selD) selectDrawing(null);
     else if(soloPanel) exitSolo();
     else if(state.calc.open) closeCalc();
   }
@@ -2534,12 +2718,13 @@ window.addEventListener('keydown',e=>{
 // Solo 1, 2 o 4 gráficas en el móvil
 if(![1,2,4].includes(state.layout)) state.layout=state.layout>=4?4:1;
 const mE=id=>document.getElementById(id);
-const TOOL_NAMES={cursor:'Cursor',h:'Horizontal',trend:'Tendencia',chan:'Canal',fib:'Fibonacci',brush:'Pincel',eraser:'Goma'};
+const TOOL_NAMES={cursor:'Cursor',h:'Horizontal',trend:'Tendencia',chan:'Canal',fib:'Fibonacci',rect:'Rectángulo',brush:'Pincel',eraser:'Goma'};
 const TOOL_TIPS={
   h:'Mueve la cruz y toca para fijar',
   trend:'Punto 1: mueve la cruz y toca',
   chan:'Punto 1: mueve la cruz y toca',
   fib:'Inicio: mueve la cruz y toca',
+  rect:'Esquina 1: mueve la cruz y toca',
   brush:'Dibuja con el dedo',
   eraser:'Toca un dibujo para borrarlo'
 };
@@ -2555,7 +2740,7 @@ mE('slChR').appendChild(mE('chExtR'));
 
 // Herramientas: reutilizo los iconos de la barra lateral
 const toolGrid=mE('toolGrid');
-['cursor','h','trend','chan','fib','brush','eraser'].forEach(t=>{
+['cursor','h','trend','chan','fib','rect','brush','eraser'].forEach(t=>{
   const src=document.querySelector('#tools button[data-tool="'+t+'"] svg');
   const b=document.createElement('button');
   b.type='button';b.dataset.tool=t;
@@ -2572,7 +2757,9 @@ const wGrid=mE('wGrid');
 });
 wGrid.addEventListener('click',e=>{
   const b=e.target.closest('button[data-w]');if(!b) return;
-  state.width=+b.dataset.w;save();syncTools();
+  state.width=+b.dataset.w;
+  const r=selRectObj();if(r) r.w=state.width;
+  invalidateAll();syncTools();
 });
 function syncTools(){
   toolGrid.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool));
@@ -2642,9 +2829,41 @@ function renderSymList(){
     const c=document.createElement('span');c.className='coin';setCoin(c,sym);
     b.appendChild(c);b.appendChild(document.createTextNode(sym));
     if(p&&p.cfg.symbol===sym) b.classList.add('on');
+    const st=document.createElement('span');st.className='fav-star'+(isFav(sym,mk)?' on':'');st.textContent=isFav(sym,mk)?'★':'☆';
+    st.setAttribute('aria-label','Favorito');b.appendChild(st);
     symList.appendChild(b);
   }
+  renderFavs();
 }
+const FAV_TAG={spot:'',futures:'FUT',hl:'HL',td:'TD'};
+const isFav=(s,mk)=>state.favs.some(f=>f.s===s&&f.m===mk);
+function toggleFav(s,mk){
+  const i=state.favs.findIndex(f=>f.s===s&&f.m===mk);
+  if(i>=0) state.favs.splice(i,1);else state.favs.push({s,m:mk});
+  save();
+}
+function renderFavs(){
+  const bar=mE('favBar'),sec=mE('favSec'),p=curPanel();
+  const show=state.favs.length>0&&!symSearch.value.trim();
+  bar.hidden=sec.hidden=!show;
+  bar.innerHTML='';
+  if(!show) return;
+  for(const f of state.favs){
+    const c=document.createElement('div');c.className='fav-chip';c.dataset.s=f.s;c.dataset.m=f.m;
+    if(p&&p.cfg.symbol===f.s&&p.cfg.market===f.m) c.classList.add('on');
+    const t=document.createElement('span');t.textContent=f.s;c.appendChild(t);
+    if(FAV_TAG[f.m]){const g=document.createElement('span');g.className='tg';g.textContent=FAV_TAG[f.m];c.appendChild(g);}
+    const x=document.createElement('span');x.className='x';x.textContent='×';x.setAttribute('aria-label','Quitar de favoritos');c.appendChild(x);
+    bar.appendChild(c);
+  }
+}
+mE('favBar').addEventListener('click',e=>{
+  const c=e.target.closest('.fav-chip');if(!c) return;
+  const s=c.dataset.s,mk=c.dataset.m;
+  if(e.target.closest('.x')){toggleFav(s,mk);renderFavs();renderSymList();return;}
+  const p=curPanel();if(!p) return;
+  p.goTo(mk,s);closeSheets();
+});
 function syncSymSheet(){
   const p=curPanel();if(!p) return;
   tfGrid.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.iv===p.cfg.interval));
@@ -2660,6 +2879,7 @@ symSearch.addEventListener('keydown',e=>{
 });
 symList.addEventListener('click',e=>{
   const b=e.target.closest('button[data-sym]');const p=curPanel();if(!b||!p) return;
+  if(e.target.closest('.fav-star')){toggleFav(b.dataset.sym,p.cfg.market);renderSymList();return;}
   p.setSymbol(b.dataset.sym);closeSheets();
 });
 mE('mPair').addEventListener('click',()=>{
@@ -2696,6 +2916,7 @@ mE('shMore').querySelector('.sh-list').addEventListener('click',e=>{
   const p=curPanel(),a=b.dataset.act;
   if(a==='calc'){closeSheets();if(!state.calc.open) openCalc(false);}
   else if(a==='fib'){closeSheets();setTimeout(()=>showFibPanel(true),60);}
+  else if(a==='rect'){openSelSheet(true);}
   else if(a==='td'){openTdSheet();}
   else if(a==='inv'){if(p) p.invEl.click();syncMore();}
   else if(a==='exp'){closeSheets();exportDrawings();}
@@ -2725,15 +2946,18 @@ function mSync(){
   const eye=mE('mEye');
   eye.innerHTML=state.hideDrawings?ICON_EYE_OFF_M:ICON_EYE_M;
   eye.classList.toggle('on',!!state.hideDrawings);
+  if(typeof mSelSync==='function') mSelSync();
 }
 function mToolSync(){
   const chip=mE('mTool');
+  if(typeof mSelSync==='function') mSelSync();
   mE('mDraw').classList.toggle('on',tool!=='cursor');
   if(tool==='cursor'){chip.hidden=true;return;}
   let tip=TOOL_TIPS[tool]||'';
   const cp=curPanel(),pd=cp&&cp.pending;
   if(pd){
     if(tool==='fib') tip='Final: mueve la cruz y toca';
+    else if(tool==='rect') tip='Esquina opuesta: mueve la cruz y toca';
     else if(tool==='trend') tip='Punto 2: mueve la cruz y toca';
     else if(tool==='chan') tip=pd.stage===1?'Punto 2: mueve la cruz y toca':'Ancho: mueve la cruz y toca';
   }
@@ -2896,6 +3120,95 @@ document.addEventListener('visibilitychange',()=>{
   setTimeout(remember,800);
   window.__vpFix={run,short,known};
 })();
+
+/* ---------- Seleccionar dibujos: editar y borrar ---------- */
+const SEL_NAMES={h:'Línea horizontal',trend:'Tendencia',chan:'Canal',fib:'Fibonacci',rect:'Rectángulo',brush:'Pincel'};
+const RECT_FILLS=['#4da3ff','#26a69a','#ef5350','#f5c518','#ff9800','#d36bff','#9aa4b2','#ffffff'];
+const rpSws=mE('rpSws'),rpColor=mE('rpColor'),rpOp=mE('rpOp'),selSw=mE('selSw'),selW=mE('selW');
+let selNew=false;
+RECT_FILLS.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='sw';b.style.background=c;b.dataset.c=c;b.type='button';b.setAttribute('aria-label','Relleno');
+  b.addEventListener('click',()=>applyRect({fill:c}));
+  rpSws.insertBefore(b,rpColor);
+});
+SWATCHES.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='sw';b.style.background=c;b.dataset.c=c;b.type='button';b.setAttribute('aria-label','Color');
+  b.addEventListener('click',()=>applySel({color:c}));
+  selSw.appendChild(b);
+});
+[1,2,3,4].forEach(w=>{
+  const b=document.createElement('button');b.type='button';b.dataset.w=w;b.textContent=w+' px';
+  b.addEventListener('click',()=>applySel({w}));
+  selW.appendChild(b);
+});
+function applySel(patch){
+  const d=selObj();if(!d) return;
+  Object.assign(d,patch);
+  invalidateAll();syncSelSheet();
+}
+function syncRectPanel(){
+  const sel=selObj('rect'),r=sel||state.rect;
+  const fill=(r.fill||state.rect.fill).toLowerCase(),fo=r.fo!=null?r.fo:state.rect.fo;
+  rpSws.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b.dataset.c.toLowerCase()===fill));
+  rpColor.value=fill;
+  rpOp.value=String(Math.round(fo*100));
+  mE('rpOpV').textContent=Math.round(fo*100)+' %';
+  mE('rpExtL').checked=!!r.extL;
+  mE('rpExtR').checked=!!r.extR;
+}
+function applyRect(patch){
+  Object.assign(state.rect,patch);
+  const r=selObj('rect');
+  if(r) Object.assign(r,patch);
+  invalidateAll();
+  syncRectPanel();
+}
+rpColor.addEventListener('input',()=>applyRect({fill:rpColor.value}));
+rpOp.addEventListener('input',()=>applyRect({fo:+rpOp.value/100}));
+mE('rpExtL').addEventListener('change',e=>applyRect({extL:e.target.checked}));
+mE('rpExtR').addEventListener('change',e=>applyRect({extR:e.target.checked}));
+function syncSelSheet(){
+  const d=selNew?null:selObj();
+  mE('selTitle').textContent=selNew?'Rectángulo (nuevos)':(d?SEL_NAMES[d.type]+' seleccionado':'Dibujo');
+  mE('selStyle').hidden=selNew||!d;
+  mE('selRect').hidden=!(selNew||(d&&d.type==='rect'));
+  mE('selDelRow').hidden=selNew||!d;
+  if(d){
+    selSw.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b.dataset.c===d.color));
+    selW.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.w===d.w));
+  }
+  syncRectPanel();
+}
+function openSelSheet(isNew){
+  selNew=!!isNew;
+  syncSelSheet();
+  openSheet('shSel');sheetBg.classList.add('light');
+}
+function deleteSel(){
+  const r=selObj();
+  if(!r) return false;
+  const list=drawingsOf(selD.key),i=list.indexOf(r);
+  if(i>=0) list.splice(i,1);
+  selectDrawing(null);invalidateAll();
+  return true;
+}
+function mSelSync(){
+  const chip=mE('mSel');if(!chip) return;
+  const d=selObj(),p=curPanel();
+  const ok=!!d&&!!p&&selD.key===p.key&&tool==='cursor'&&!state.hideDrawings;
+  chip.hidden=!ok;
+  if(ok) mE('mSelTxt').textContent=SEL_NAMES[d.type]||'Dibujo';
+}
+mE('mSelEdit').addEventListener('click',()=>{
+  const d=selObj();if(!d) return;
+  if(d.type==='fib'){showFibPanel(true);return;}
+  openSelSheet(false);
+});
+mE('mSelDel').addEventListener('click',()=>{deleteSel();});
+mE('mSelX').addEventListener('click',()=>selectDrawing(null));
+mE('selDel').addEventListener('click',()=>{deleteSel();closeSheets();});
 
 /* ---------- Arranque ---------- */
 function loop(){
